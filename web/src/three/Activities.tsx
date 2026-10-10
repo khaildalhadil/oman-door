@@ -99,7 +99,7 @@ function StarsActivity({ empties, controls }: Props) {
     c.minDistance = 2.0 // dollyTo clamps to the current range
     c.dollyTo(2.3, true)
     c.rotateTo(0, 2.02, true)
-    useStore.getState().showToast('ابحث في السماء الشمالية عن «نجم الجاه» واضغط عليه ✨')
+    useStore.getState().showToast('ابحثي في السماء عن النجم داخل الدائرة الذهبية: إنه «نجم الجاه» — اضغطي عليه ✨')
   }
   const restore = () => {
     const c = controls.current
@@ -131,7 +131,7 @@ function StarsActivity({ empties, controls }: Props) {
     if (done) return
     sfx.correct()
     useStore.getState().setActivityDone('nav')
-    useStore.getState().showToast('أحسنت! هذا «نجم الجاه» (النجم القطبي)؛ اهتدى به البحّارة إلى جهة الشمال ⭐')
+    useStore.getState().showToast('أحسنتِ! هذا «نجم الجاه» (النجم القطبي)؛ اهتدى به البحّارة إلى جهة الشمال ⭐')
     setTimeout(restore, 3500)
   }
 
@@ -347,7 +347,7 @@ function TurtleActivity({ nodes, empties, scene, world }: Props) {
             h.state = 'confused'
             if (!warned.current) {
               warned.current = true
-              st.showToast('الضوء القوي يربك صغار السلاحف فتتجه إليه بدل البحر! أطفئ المصابيح 💡')
+              st.showToast('الضوء القوي يربك صغار السلاحف فتتجه إليه بدل البحر! أطفئي المصابيح 💡')
             }
           }
         }
@@ -373,13 +373,13 @@ function TurtleActivity({ nodes, empties, scene, world }: Props) {
     }
     if (!done && safe === hatch.length) {
       st.setActivityDone('turtles')
-      st.showToast('أحسنت! وصلت صغار السلاحف كلها إلى البحر بأمان 🐢🌊')
+      st.showToast('أحسنتِ! وصلت صغار السلاحف كلها إلى البحر بأمان 🐢🌊')
     }
     // objective marker
     const lampIdx = onRef.current.findIndex(Boolean)
     if (lampIdx >= 0) {
       activityNav.target = lamps[lampIdx]
-      activityNav.label = 'أطفئ المصباح'
+      activityNav.label = 'أطفئي المصباح'
     } else {
       const h = hatch.find((x) => x.state === 'idle' || x.state === 'crawl')
       activityNav.target = h ? h.o.position : null
@@ -395,7 +395,7 @@ function TurtleActivity({ nodes, empties, scene, world }: Props) {
       const next = onRef.current.slice()
       next[near] = false
       setOn(next)
-      if (!next.some(Boolean)) st.showToast('ممتاز! الآن اقترب من صغار السلاحف لترافقها إلى البحر 🌙')
+      if (!next.some(Boolean)) st.showToast('ممتاز! الآن اقتربي من صغار السلاحف لترافقيها إلى البحر 🌙')
     }
     void s
   })
@@ -560,7 +560,7 @@ function ClothingActivity({ empties }: Props) {
   useEffect(() => {
     if (!done && pieces.every((p) => seen.includes('piece_' + p.key))) {
       useStore.getState().setActivityDone('clothing')
-      useStore.getState().showToast('أحسنت! عرفت أسماء قطع الزي العُماني كلها 👘 جرّب الآن أزياء مريم أمام المرآة 🪞')
+      useStore.getState().showToast('أحسنتِ! عرفتِ أسماء قطع الزي العُماني كلها 👘 جرّبي الآن أزياء مريم أمام المرآة 🪞')
     }
   }, [seen, done, pieces])
   useFrame(() => {

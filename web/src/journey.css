@@ -674,6 +674,169 @@
   height: 30px;
 }
 
+/* ---------------------------------------------- "what to do now" guidance */
+.mission__step {
+  display: block;
+  margin-top: 3px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  line-height: 1.5;
+  color: var(--gold-2);
+}
+
+/* the open card shows the numbered steps instead */
+.mission:not(.is-collapsed) .mission__step {
+  display: none;
+}
+
+.checks li.is-now {
+  color: #fff4dc;
+  font-weight: 700;
+}
+
+.checks li.is-now::before {
+  content: '◀';
+  color: var(--gold-2);
+  animation: nudge 1.2s ease-in-out infinite;
+  display: inline-block;
+}
+
+@keyframes nudge {
+  50% {
+    transform: translateX(-3px);
+  }
+}
+
+.mission__lock {
+  display: block;
+  margin-top: 6px;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+/* first-play guide ("كيف ألعب؟") */
+.guide {
+  list-style: none;
+  margin: 4px 0 10px;
+  padding: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.guide li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 12px;
+  border-radius: 16px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.guide__icon {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: 14px;
+  font-size: 1.7rem;
+  background: rgba(231, 201, 127, 0.12);
+  border: 1px solid rgba(231, 201, 127, 0.3);
+}
+
+.guide b {
+  display: block;
+  font-size: 1.02rem;
+  color: #fff4dc;
+}
+
+.guide p {
+  margin: 3px 0 0;
+  font-size: 0.88rem;
+  line-height: 1.7;
+  color: var(--sand);
+}
+
+.guide__tip {
+  margin: 0 0 12px;
+  font-size: 0.85rem;
+  color: var(--gold-2);
+  text-align: center;
+}
+
+.guide__foot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.guide__device {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.chip.is-active {
+  border-color: var(--gold);
+  background: rgba(231, 201, 127, 0.16);
+  color: #fff4dc;
+}
+
+@media (max-width: 640px) {
+  .guide {
+    grid-template-columns: 1fr;
+    gap: 8px;
+  }
+
+  .guide li {
+    padding: 9px 10px;
+  }
+
+  .guide__icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1.4rem;
+  }
+
+  .guide__foot {
+    justify-content: center;
+  }
+
+  .guide__foot .btn--xl {
+    width: 100%;
+    justify-content: center;
+  }
+
+  /* the start button stays visible while the guide scrolls */
+  .guide__foot {
+    position: sticky;
+    bottom: -12px;
+    padding: 10px 0 12px;
+    background: linear-gradient(180deg, rgba(28, 19, 13, 0), rgba(28, 19, 13, 0.96) 30%);
+  }
+
+  .guide p {
+    font-size: 0.82rem;
+    line-height: 1.6;
+  }
+
+  .guide__tip {
+    font-size: 0.8rem;
+    margin-bottom: 8px;
+  }
+
+  .modal__box.help {
+    max-height: calc(100dvh - 24px);
+    overflow-y: auto;
+  }
+}
+
 /* ------------------------------------------------------------------ intro */
 /* scrolls when the screen is short, so the start button is always reachable */
 .intro {
@@ -796,7 +959,7 @@
   }
 
   .toast {
-    top: 120px;
+    top: 138px;
     font-size: 0.85rem;
   }
 
@@ -808,8 +971,8 @@
     grid-template-columns: 1fr;
   }
 
-  .station-list {
-    display: none;
+  .station-list button {
+    padding: 6px 8px;
   }
 }
 

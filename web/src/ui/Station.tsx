@@ -17,14 +17,21 @@ export function PlazaMission() {
   const requestStation = useStore((s) => s.requestStation)
   const setPassportOpen = useStore((s) => s.setPassportOpen)
   const count = STATION_ORDER.filter((id) => stamps[id]).length
+  const next = STATION_ORDER.find((id) => !stamps[id])
   const { collapsed, toggle } = useCollapsible()
+  const step = next
+    ? `الأختام ${toAr(count)}/${toAr(STATION_ORDER.length)} · التالية: ${STATIONS[next].title} (اتبعي السهم)`
+    : 'جمعتِ الأختام الخمسة! 🏅 افتحي جوازكِ'
   return (
     <section className={'mission' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}>
       <div className="mission__bar" role="button" tabIndex={0} aria-expanded={!collapsed} onClick={toggle} onKeyDown={(e) => e.key === 'Enter' && toggle()}>
-        <span className="kicker">رحلة «{JOURNEY.title}»</span>
+        <div>
+          <span className="kicker">رحلة «{JOURNEY.title}»</span>
+          <span className="mission__step">{step}</span>
+        </div>
         <CollapseToggle collapsed={collapsed} />
       </div>
-      <p>زُر المحطات الخمس، أنجز أنشطتها، واجمع أختام جوازك. ادخل من أي مدخل أو اضغط على اسم المحطة.</p>
+      <p>زوري المحطات الخمس بالترتيب الذي تحبينه، وفي كل محطة تحصلين على ختم في جوازكِ. ادخلي من أي مدخل في الساحة، أو اضغطي على اسم المحطة هنا 👇</p>
       <ul className="station-list">
         {STATION_ORDER.map((id) => (
           <li key={id}>
@@ -63,6 +70,15 @@ export function StationMission({ id }: { id: StationId }) {
   const itemsDone = seen === def.items.length
   const ready = itemsDone && pr.activity
   const { collapsed, toggle } = useCollapsible(ready && !stamped)
+  // the one thing to do now (1 discover → 2 activity → 3 challenge)
+  const now = !itemsDone ? 1 : !pr.activity ? 2 : !stamped ? 3 : 4
+  const nowText = [
+    `اكتشفي النقاط المضيئة (${toAr(seen)}/${toAr(def.items.length)})`,
+    `النشاط: ${def.activityTitle}`,
+    'اضغطي «ابدئي تحدي المحطة» ⭐',
+  ][now - 1]
+  const step = now <= 3 ? `${toAr(now)}/٣ · ${nowText}` : '✓ أنهيتِ المحطة، عودي إلى الساحة'
+  const li = (n: number, done: boolean) => (done ? 'done' : now === n ? 'is-now' : '')
   return (
     <section
       className={'mission mission--station' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}
@@ -76,32 +92,37 @@ export function StationMission({ id }: { id: StationId }) {
           <div>
             <span className="kicker">محطة · {def.subtitle}</span>
             <h3>{def.title}</h3>
+            <span className="mission__step">{step}</span>
           </div>
         </div>
         <CollapseToggle collapsed={collapsed} />
       </div>
       <ul className="checks">
-        <li className={itemsDone ? 'done' : ''}>
-          اكتشف المعلومات المضيئة ({toAr(seen)}/{toAr(def.items.length)})
+        <li className={li(1, itemsDone)}>
+          ١. اكتشفي النقاط المضيئة ({toAr(seen)}/{toAr(def.items.length)})
+          {now === 1 && <small>اتبعي السهم الذهبي، واقتربي من كل دائرة مضيئة لتظهر لكِ معلومة ✨</small>}
         </li>
-        <li className={pr.activity ? 'done' : ''}>
-          نشاط: {def.activityTitle}
-          {!pr.activity && <small>{def.activityHint}</small>}
+        <li className={li(2, pr.activity)}>
+          ٢. النشاط: {def.activityTitle}
+          {now === 2 && <small>{def.activityHint}</small>}
         </li>
-        <li className={pr.quizDone ? 'done' : ''}>تحدي المحطة ثم الختم 🏅</li>
+        <li className={li(3, pr.quizDone)}>
+          ٣. تحدي المحطة: ٣ أسئلة صح أو خطأ، ثم الختم 🏅
+        </li>
       </ul>
       <div className="mission__actions">
         {!stamped ? (
-          <button className="btn btn--primary btn--sm" disabled={!ready} onClick={() => setStationQuiz(id)} title={ready ? '' : 'أكمل المعلومات والنشاط أولاً'}>
-            {ready ? 'ابدأ تحدي المحطة ⭐' : '🔒 تحدي المحطة'}
+          <button className="btn btn--primary btn--sm" disabled={!ready} onClick={() => setStationQuiz(id)}>
+            {ready ? 'ابدئي تحدي المحطة ⭐' : '🔒 تحدي المحطة'}
           </button>
         ) : (
-          <span className="stamp-ok">✓ حصلت على ختم المحطة</span>
+          <span className="stamp-ok">✓ حصلتِ على ختم المحطة</span>
         )}
         <button className="btn btn--ghost btn--sm" onClick={() => goTo('plaza', id)}>
           ↩ الساحة
         </button>
       </div>
+      {!ready && !stamped && <small className="mission__lock">🔒 يُفتح التحدي بعد إكمال الخطوتين ١ و٢</small>}
     </section>
   )
 }
@@ -204,9 +225,9 @@ export function StationQuiz() {
           </div>
         ) : (
           <div className="quiz__result">
-            <div className="quiz__verdict">{ok ? 'أحسنت! 🌟' : `الإجابة الصحيحة: «${q.answer ? 'صح' : 'خطأ'}»`}</div>
+            <div className="quiz__verdict">{ok ? 'أحسنتِ! 🌟' : `الإجابة الصحيحة: «${q.answer ? 'صح' : 'خطأ'}»`}</div>
             <p className="quiz__explain">
-              <b>هل تعلم؟ </b>
+              <b>هل تعلمين؟ </b>
               {q.explain}
             </p>
             <button
@@ -217,7 +238,7 @@ export function StationQuiz() {
                 else setI(i + 1)
               }}
             >
-              {last ? 'احصل على الختم 🏅' : 'السؤال التالي'}
+              {last ? 'احصلي على الختم 🏅' : 'السؤال التالي'}
             </button>
           </div>
         )}
@@ -252,10 +273,10 @@ function TradeGame() {
   const done = useStore((s) => s.progress.ivory.activity)
   const [placed, setPlaced] = useState<Record<string, string>>({})
   const [sel, setSel] = useState<string | null>(null)
-  const [msg, setMsg] = useState('اختر سلعة ثم اضغط على المكان الذي جاءت منه.')
+  const [msg, setMsg] = useState('اختاري سلعة من الأسفل 👇 ثم اضغطي على الميناء الذي جاءت منه على الخريطة.')
   const all = GOODS.every((g) => placed[g.key])
   const drop = (port: string) => {
-    if (!sel) return setMsg('اختر سلعة أولاً 👇')
+    if (!sel) return setMsg('اختاري سلعة أولاً 👇')
     const g = GOODS.find((x) => x.key === sel)!
     if (g.to === port) {
       sfx.correct()
@@ -264,13 +285,13 @@ function TradeGame() {
       setMsg(`صحيح! ${g.name} ✓`)
     } else {
       sfx.wrong()
-      setMsg(`ليس هنا… فكّر من أين يأتي «${g.name}» 🤔`)
+      setMsg(`ليس هنا… فكّري من أين يأتي «${g.name}» 🤔`)
     }
   }
   useEffect(() => {
     if (all && !done) {
       useStore.getState().setActivityDone('ivory')
-      setMsg('أحسنت! هكذا ربطت التجارة البحرية بين عُمان وشرق أفريقيا والهند 🌊')
+      setMsg('أحسنتِ! هكذا ربطت التجارة البحرية بين عُمان وشرق أفريقيا والهند 🌊')
     }
   }, [all, done])
   return (
@@ -420,7 +441,7 @@ function Wardrobe() {
             ✕
           </button>
         </div>
-        <p className="muted">اختر لون ثوب مريم ولحافها، وسترى التغيير عليها مباشرة.</p>
+        <p className="muted">اختاري لون ثوب مريم ولحافها، وسترين التغيير عليها مباشرة.</p>
         <div className="outfits">
           {OUTFITS.map((o) => (
             <button key={o.key} className={'outfit' + (outfit === o.key ? ' is-active' : '')} onClick={() => (setOutfit(o.key), sfx.click())}>

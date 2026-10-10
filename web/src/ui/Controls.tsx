@@ -50,8 +50,8 @@ export function Joystick() {
 
 export const PROMPTS: Record<string, { icon: string; label: string; verb: string }> = {
   screen: { icon: '📺', label: 'مشاهدة', verb: 'لمشاهدة الفيديو' },
-  dig: { icon: '⛏', label: 'احفر', verb: 'للحفر والكشف عن القطعة' },
-  lamp: { icon: '💡', label: 'أطفئ', verb: 'لإطفاء المصباح' },
+  dig: { icon: '⛏', label: 'احفري', verb: 'للحفر والكشف عن القطعة' },
+  lamp: { icon: '💡', label: 'أطفئي', verb: 'لإطفاء المصباح' },
   map: { icon: '🗺', label: 'الخريطة', verb: 'لفتح خريطة التجارة' },
   mirror: { icon: '🪞', label: 'المرآة', verb: 'لفتح خزانة مريم' },
   stars: { icon: '✨', label: 'السماء', verb: 'للنظر إلى النجوم' },
@@ -108,7 +108,7 @@ export function KeyHints() {
         <kbd>E</kbd>
         <span>تفاعل</span>
         <span className="mouse">🖱</span>
-        <span>اسحب لتدوير الكاميرا</span>
+        <span>اسحبي لتدوير الكاميرا</span>
       </div>
     </div>
   )

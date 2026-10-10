@@ -54,7 +54,7 @@ function signTexture() {
     g.fillText('ساحة التحدي', W / 2, H * 0.42)
     g.fillStyle = '#2a1a10'
     g.font = `600 ${H * 0.15}px "Tajawal", sans-serif`
-    g.fillText('اقترب من كل منصة وأجب: صح أم خطأ؟ ⭐', W / 2, H * 0.78)
+    g.fillText('اقتربي من كل منصة وأجيبي: صح أم خطأ؟ ⭐', W / 2, H * 0.78)
   })
 }
 
@@ -69,7 +69,7 @@ function scoreTexture(name: string, answers: ({ correct: boolean } | null)[]) {
     g.fillText('لوحة النتائج', W / 2, H * 0.17)
     g.fillStyle = '#2a1a10'
     g.font = `600 ${H * 0.085}px "Tajawal", sans-serif`
-    g.fillText(name ? `اللاعب: ${name}` : 'أجب عن أسئلة المنصّات', W / 2, H * 0.33)
+    g.fillText(name ? `اللاعبة: ${name}` : 'أجيبي عن أسئلة المنصّات', W / 2, H * 0.33)
     const n = answers.length
     const size = Math.min(W * 0.8 / Math.max(n, 1), H * 0.2)
     const x0 = W / 2 + (size * n) / 2 - size / 2

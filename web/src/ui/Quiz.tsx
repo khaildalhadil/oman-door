@@ -4,7 +4,7 @@ import { useStore } from '../store'
 
 export const toAr = (n: number) => String(n).replace(/\d/g, (d) => '٠١٢٣٤٥٦٧٨٩'[+d])
 
-const PRAISE = ['أحسنت! 🌟', 'رائع! 👏', 'إجابة ممتازة! ✨', 'صحيح، أنت بطل! 🏆']
+const PRAISE = ['أحسنتِ! 🌟', 'رائع! 👏', 'إجابة ممتازة! ✨', 'صحيح، أنتِ بطلة! 🏆']
 
 /* ------------------------------------------------------------ question */
 
@@ -68,7 +68,7 @@ export function QuizModal() {
               {a.correct ? praise : `الإجابة الصحيحة: «${q.answer ? 'صح' : 'خطأ'}»`}
             </div>
             <p className="quiz__explain">
-              <b>هل تعلم؟ </b>
+              <b>هل تعلمين؟ </b>
               {q.explain}
             </p>
             <button className="btn btn--primary btn--xl" onClick={close} autoFocus>
@@ -234,7 +234,7 @@ export function Certificate() {
           <div className="cert__side">
             <label className="field">
               <span>الاسم على الشهادة</span>
-              <input value={draft} maxLength={40} onChange={(e) => setDraft(e.target.value)} onBlur={() => setName(draft.trim())} placeholder="اكتب اسمك" />
+              <input value={draft} maxLength={40} onChange={(e) => setDraft(e.target.value)} onBlur={() => setName(draft.trim())} placeholder="اكتبي اسمكِ" />
             </label>
             <ol className="cert__list">
               {round.map((q, i) => (

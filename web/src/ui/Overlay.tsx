@@ -56,13 +56,13 @@ export function Intro() {
         <h1 className="intro__title">{INTRO.title}</h1>
         <Crenels />
         <p className="intro__text">{INTRO.text}</p>
-        <div className="devices" role="group" aria-label="اختر جهازك">
+        <div className="devices" role="group" aria-label="اختاري جهازك">
           {choice('desktop', '💻', 'كمبيوتر', 'الأسهم أو WASD + الفأرة')}
           {choice('mobile', '📱', 'موبايل / تابلت', 'عصا تحكّم على الشاشة')}
         </div>
         <label className="field field--intro">
           <span>اسمك (يظهر على الشهادة)</span>
-          <input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} placeholder="اكتب اسمك هنا" />
+          <input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} placeholder="اكتبي اسمكِ هنا" />
         </label>
         <div className="progress" aria-label="تحميل">
           <div className="progress__bar" style={{ width: `${Math.max(4, progress)}%` }} />
@@ -162,21 +162,24 @@ export function Mission() {
   const { collapsed, toggle } = useCollapsible()
 
   let title = ''
+  let step = ''
   let body: React.ReactNode = null
   let actions: React.ReactNode = null
   if (scene === 'gate') {
     title = 'المهمة ١: بوابة عُمان'
-    body = <p>تحرّك مع مريم نحو البوابة الكبيرة؛ ستنفتح أبوابها عند الاقتراب، ومن خلفها ساحة الرحلة. 🚪</p>
+    step = 'امشي نحو البوابة الكبيرة لتنفتح 🚪'
+    body = <p>امشي مع مريم نحو البوابة الكبيرة؛ ستنفتح أبوابها عندما تقتربين، ومن خلفها ساحة الرحلة. 🚪</p>
     actions = (
       <button className="btn btn--ghost btn--sm" onClick={requestEnter}>
-        تخطَّ ⏭
+        تخطّي ⏭
       </button>
     )
   } else if (scene === 'fort') {
-    title = quizDone ? 'المهمة ٣: ادخل القلعة' : 'المهمة ٢: ساحة التحدي'
+    title = quizDone ? 'المهمة ٣: ادخلي القلعة' : 'المهمة ٢: ساحة التحدي'
+    step = quizDone ? 'اتبعي السهم إلى البوابة الرئيسية' : `أجيبي عن أسئلة المنصّات (${toAr(answered)}/${toAr(round.length)})`
     body = (
       <>
-        <p>{quizDone ? 'أحسنت! اتبع السهم إلى البوابة الرئيسية لدخول القلعة.' : 'اتبع السهم الذهبي إلى المنصّات وأجب عن الأسئلة: صح أم خطأ؟'}</p>
+        <p>{quizDone ? 'أحسنتِ! اتبعي السهم إلى البوابة الرئيسية لدخول القلعة.' : 'اتبعي السهم الذهبي إلى المنصّات، وأجيبي عن الأسئلة: صح أم خطأ؟'}</p>
         <div className="stars" aria-label={`النجوم ${stars} من ${round.length}`}>
           {round.map((_, i) => (
             <span key={i} className={answers[i] ? (answers[i]!.correct ? 'ok' : 'bad') : ''}>
@@ -197,7 +200,7 @@ export function Mission() {
           </button>
         )}
         <button className="btn btn--ghost btn--sm" onClick={requestEnter}>
-          ادخل القلعة ⏭
+          ادخلي القلعة ⏭
         </button>
         <button className="btn btn--ghost btn--sm" onClick={() => goTo('plaza', 'bonus')}>
           ↩ الساحة
@@ -206,12 +209,13 @@ export function Mission() {
     )
   } else {
     title = 'المهمة ٤: مجلس القلعة'
+    step = 'اقرئي اللوحات وشاهدي الفيديو'
     body = (
       <ul className="checks">
         <li className={boardsRead.length >= INTERIOR.boards.length ? 'done' : ''}>
-          اقرأ اللوحات ({toAr(boardsRead.length)}/{toAr(INTERIOR.boards.length)})
+          اقرئي اللوحات ({toAr(boardsRead.length)}/{toAr(INTERIOR.boards.length)})
         </li>
-        <li className={videoWatched ? 'done' : ''}>شاهد الفيديو أمام الشاشة</li>
+        <li className={videoWatched ? 'done' : ''}>شاهدي الفيديو أمام الشاشة</li>
       </ul>
     )
     actions = (
@@ -231,7 +235,10 @@ export function Mission() {
   return (
     <section className={'mission' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}>
       <div className="mission__bar" role="button" tabIndex={0} aria-expanded={!collapsed} onClick={toggle} onKeyDown={(e) => e.key === 'Enter' && toggle()}>
-        <span className="kicker">{title}</span>
+        <div>
+          <span className="kicker">{title}</span>
+          <span className="mission__step">{step}</span>
+        </div>
         <CollapseToggle collapsed={collapsed} />
       </div>
       {body}
@@ -291,14 +298,14 @@ export function Prompt() {
   if (prompt === 'screen')
     return (
       <button className="prompt" onClick={() => setVideoOpen(true)}>
-        🎬 {device === 'desktop' ? 'اضغط E أو انقر هنا لمشاهدة الفيديو' : 'اضغط هنا لمشاهدة الفيديو'}
+        🎬 {device === 'desktop' ? 'اضغطي E أو انقري هنا لمشاهدة الفيديو' : 'اضغطي هنا لمشاهدة الفيديو'}
       </button>
     )
   const p = PROMPTS[prompt]
   if (p)
     return (
       <button className="prompt" onClick={() => (input.interact = true)}>
-        {p.icon} {device === 'desktop' ? `اضغط E أو انقر هنا ${p.verb}` : `اضغط زر «${p.label}» ${p.verb}`}
+        {p.icon} {device === 'desktop' ? `اضغطي E أو انقري هنا ${p.verb}` : `اضغطي هنا أو زر «${p.label}» ${p.verb}`}
       </button>
     )
   return <div className="prompt">{prompt}</div>
@@ -402,40 +409,99 @@ export function ControlsLayer() {
 
 /* ------------------------------------------------------------------ help */
 
+const GUIDE_KEY = 'oman3d.guide'
+
 export function Help() {
   const open = useStore((s) => s.helpOpen)
   const setOpen = useStore((s) => s.setHelpOpen)
   const device = useStore((s) => s.device)
   const setDevice = useStore((s) => s.setDevice)
+  const started = useStore((s) => s.started)
+  const busy = useStore((s) => s.busy)
+  const scene = useStore((s) => s.scene)
+  // first play: show the guide as soon as the student gets control at the gate
+  useEffect(() => {
+    if (!started || busy || scene !== 'gate') return
+    let seen = false
+    try {
+      seen = localStorage.getItem(GUIDE_KEY) === '1'
+    } catch {
+      /* private mode: show it */
+    }
+    if (!seen) setOpen(true)
+  }, [started, busy, scene, setOpen])
   if (!open) return null
+  const close = () => {
+    try {
+      localStorage.setItem(GUIDE_KEY, '1')
+    } catch {
+      /* ignore */
+    }
+    setOpen(false)
+  }
+  const mobile = device === 'mobile'
+  const steps = [
+    {
+      icon: '🕹️',
+      title: 'حرّكي مريم',
+      text: mobile
+        ? 'اسحبي عصا التحكم في أسفل الشاشة، وادفعيها للآخر لتجري. وزر «قفز» للقفز.'
+        : 'بالأسهم أو حروف W A S D. ‏Shift للجري، والمسافة للقفز، واسحبي بالفأرة لتدوير الكاميرا.',
+    },
+    { icon: '🧭', title: 'اتبعي السهم الذهبي', text: 'البوصلة تخبركِ إلى أين تذهبين الآن، وكم متراً بقي.' },
+    {
+      icon: '✨',
+      title: 'اقتربي من الدوائر المضيئة',
+      text: mobile
+        ? 'تظهر لكِ معلومة جديدة. وعند الأنشطة يظهر زر في الأسفل، اضغطي عليه.'
+        : 'تظهر لكِ معلومة جديدة. وعند الأنشطة اضغطي حرف E أو الزر الذي يظهر في الأسفل.',
+    },
+    {
+      icon: '📘',
+      title: 'اجمعي ٥ أختام',
+      text: 'في كل محطة: معلومات ← نشاط ← ٣ أسئلة صح أو خطأ ← ختم في جوازكِ. والأختام الخمسة تمنحكِ وسام «مستكشف عُمان» 🏅',
+    },
+  ]
   return (
-    <div className="modal" onClick={() => setOpen(false)} role="dialog" aria-modal aria-label="المساعدة">
+    <div className="modal" onClick={close} role="dialog" aria-modal aria-label="كيف ألعب؟">
       <div className="modal__box help" onClick={(e) => e.stopPropagation()}>
         <div className="modal__head">
           <div>
-            <span className="kicker">كيف تلعب؟</span>
-            <h3>ساعد مريم في رحلتها</h3>
+            <span className="kicker">كيف ألعب؟</span>
+            <h3>رحلتكِ مع مريم في ٤ خطوات</h3>
           </div>
-          <button className="icon-btn" onClick={() => setOpen(false)} aria-label="إغلاق">
+          <button className="icon-btn" onClick={close} aria-label="إغلاق">
             ✕
           </button>
         </div>
-        <ol className="help__steps">
-          <li>ادخل من بوابة عُمان.</li>
-          <li>اذهب إلى «ساحة التحدي» بجوار قلعة نزوى، واقترب من كل منصّة لتجيب: صح أم خطأ؟ ⭐</li>
-          <li>اقترب من معالم القلعة (البرج، البوابة، الجامع، السوق، الفلج) لتظهر معلوماتها.</li>
-          <li>ادخل القلعة واقرأ اللوحات وشاهد الفيديو، ثم احصل على شهادتك 🏅</li>
+        <ol className="guide">
+          {steps.map((st, i) => (
+            <li key={i}>
+              <span className="guide__icon" aria-hidden>
+                {st.icon}
+              </span>
+              <div>
+                <b>
+                  {toAr(i + 1)}. {st.title}
+                </b>
+                <p>{st.text}</p>
+              </div>
+            </li>
+          ))}
         </ol>
-        <div className="help__devices">
-          <button className={'device' + (device === 'desktop' ? ' is-active' : '')} onClick={() => setDevice('desktop')}>
-            <span className="device__icon">💻</span>
-            <b>كمبيوتر</b>
-            <small>الأسهم/WASD للحركة • Shift للجري • مسافة للقفز • E للتفاعل • اسحب بالفأرة لتدوير الكاميرا</small>
-          </button>
-          <button className={'device' + (device === 'mobile' ? ' is-active' : '')} onClick={() => setDevice('mobile')}>
-            <span className="device__icon">📱</span>
-            <b>موبايل</b>
-            <small>عصا التحكّم للحركة (ادفعها للآخر للجري) • زر القفز • اسحب بإصبعك لتدوير الكاميرا</small>
+        <p className="guide__tip">💡 المربع في أعلى الشاشة يخبركِ دائماً ماذا تفعلين الآن، وزر «؟» يعيد هذا الدليل في أي وقت.</p>
+        <div className="guide__foot">
+          <div className="guide__device" role="group" aria-label="جهازكِ">
+            <span>أستخدم:</span>
+            <button className={'chip' + (!mobile ? ' is-active' : '')} onClick={() => setDevice('desktop')}>
+              💻 كمبيوتر
+            </button>
+            <button className={'chip' + (mobile ? ' is-active' : '')} onClick={() => setDevice('mobile')}>
+              📱 جوال / تابلت
+            </button>
+          </div>
+          <button className="btn btn--primary btn--xl" onClick={close}>
+            فهمت، لنبدأ! ✨
           </button>
         </div>
       </div>

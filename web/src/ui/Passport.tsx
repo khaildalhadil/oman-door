@@ -256,7 +256,7 @@ export function PassportSpread({ portrait, animateId }: { portrait: string; anim
         </g>
       ) : (
         <text x="1040" y="790" textAnchor="middle" fontSize="21" fill="#8a7458" fontFamily="Tajawal, sans-serif">
-          اجمع الأختام الخمسة لتحصل على وسام «{JOURNEY.finalTitle}» 🏅
+          اجمعي الأختام الخمسة لتحصلي على وسام «{JOURNEY.finalTitle}» 🏅
         </text>
       )}
     </svg>
@@ -381,7 +381,7 @@ export function PassportModal() {
         {cover ? (
           <button className="passport__coverbtn" onClick={() => (setCover(false), sfx.whoosh())}>
             <PassportCover />
-            <span className="passport__hint">اضغط لفتح الجواز</span>
+            <span className="passport__hint">اضغطي لفتح الجواز</span>
           </button>
         ) : (
           <>
@@ -391,7 +391,7 @@ export function PassportModal() {
             <div className="passport__bar">
               <label className="field">
                 <span>الاسم</span>
-                <input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} placeholder="اكتب اسمك" />
+                <input value={name} maxLength={40} onChange={(e) => setName(e.target.value)} placeholder="اكتبي اسمكِ" />
               </label>
               <label className="field">
                 <span>المدرسة</span>
