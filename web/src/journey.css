@@ -623,22 +623,172 @@
   max-height: calc(100% - 260px);
 }
 
+/* ------------------------------------------------- collapsible mission card */
+.mission__bar {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.mission__bar > :first-child {
+  flex: 1;
+  min-width: 0;
+}
+
+.mission__toggle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--gold-2);
+  font-size: 0.8rem;
+}
+
+.mission.is-collapsed > :not(.mission__bar) {
+  display: none;
+}
+
+.mission.is-collapsed {
+  width: auto;
+  max-width: min(330px, calc(100% - 36px));
+  padding-block: 8px;
+}
+
+.mission.is-collapsed .mission__head h3 {
+  font-size: 1.15rem;
+}
+
+.mission.is-collapsed .mission__head .kicker {
+  display: none;
+}
+
+.mission.is-collapsed .mission__head svg {
+  width: 30px;
+  height: 30px;
+}
+
+/* ------------------------------------------------------------------ intro */
+/* scrolls when the screen is short, so the start button is always reachable */
+.intro {
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+.intro__bg,
+.intro__shade {
+  position: fixed;
+}
+
+.intro__content {
+  margin: auto;
+}
+
+.intro .intro__content > .btn--xl {
+  position: sticky;
+  bottom: 12px;
+  z-index: 2;
+}
+
+@media (max-width: 520px), (max-height: 720px) {
+  .intro__content {
+    padding: 16px 14px 20px;
+  }
+
+  .intro__girl {
+    width: 72px;
+    height: 90px;
+  }
+
+  .intro__title {
+    font-size: clamp(1.9rem, 8.6vw, 3rem);
+    line-height: 1.2;
+  }
+
+  .intro__text {
+    font-size: 0.92rem;
+    line-height: 1.7;
+    margin-bottom: 12px;
+  }
+
+  .devices {
+    margin-bottom: 10px;
+  }
+
+  .device {
+    padding: 10px 8px 9px;
+  }
+
+  .device small {
+    font-size: 0.72rem;
+  }
+
+  .intro__note {
+    margin-top: 10px;
+  }
+}
+
+@media (max-height: 520px) {
+  .intro__title {
+    font-size: clamp(1.8rem, 7vh, 2.4rem);
+  }
+}
+
+/* ---------------------------------------------- short landscape screens */
+@media (max-height: 520px) and (min-width: 821px) {
+  .mission:not(.is-collapsed) {
+    max-height: calc(100dvh - 170px);
+    overflow-y: auto;
+  }
+
+  /* centred between the joystick (left) and the jump button (right) */
+  .info,
+  .panel {
+    top: 128px;
+    left: 50%;
+    right: auto;
+    translate: -50% 0;
+    width: min(420px, 50vw);
+    max-height: calc(100dvh - 140px);
+    overflow-y: auto;
+  }
+}
+
+/* ----------------------------------------------------------------- phones */
 @media (max-width: 820px) {
+  /* row under the top bar: passport (left) + collapsed mission card (right) */
   .passport-btn {
-    top: auto;
-    bottom: 180px;
+    top: 64px;
+    bottom: auto;
     left: 10px;
   }
 
+  .mission.is-collapsed {
+    left: auto;
+    right: 10px;
+    max-width: calc(100% - 130px);
+  }
+
+  .mission:not(.is-collapsed) {
+    top: 118px;
+    max-height: max(150px, calc(100dvh - 360px));
+    overflow-y: auto;
+  }
+
+  /* above the compass (bottom: 176px) */
   .info,
   .panel {
     top: auto;
+    bottom: 232px;
     max-height: 36%;
-  }
-
-  /* the card takes the same corner on phones */
-  body:has(.info, .panel) .passport-btn {
-    display: none;
   }
 
   .passport-btn__label {
@@ -646,7 +796,7 @@
   }
 
   .toast {
-    top: 150px;
+    top: 120px;
     font-size: 0.85rem;
   }
 

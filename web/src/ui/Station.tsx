@@ -3,6 +3,7 @@ import { sfx } from '../game/sfx'
 import { JOURNEY, STATION_ORDER, STATIONS, type StationId } from '../stations'
 import { useStore } from '../store'
 import { PIECES } from '../three/Activities'
+import { CollapseToggle, useCollapsible } from './collapse'
 import { StationIcon } from './Passport'
 import { toAr } from './Quiz'
 
@@ -16,9 +17,13 @@ export function PlazaMission() {
   const requestStation = useStore((s) => s.requestStation)
   const setPassportOpen = useStore((s) => s.setPassportOpen)
   const count = STATION_ORDER.filter((id) => stamps[id]).length
+  const { collapsed, toggle } = useCollapsible()
   return (
-    <section className={'mission' + (busy ? ' is-hidden' : '')}>
-      <span className="kicker">رحلة «{JOURNEY.title}»</span>
+    <section className={'mission' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}>
+      <div className="mission__bar" role="button" tabIndex={0} aria-expanded={!collapsed} onClick={toggle} onKeyDown={(e) => e.key === 'Enter' && toggle()}>
+        <span className="kicker">رحلة «{JOURNEY.title}»</span>
+        <CollapseToggle collapsed={collapsed} />
+      </div>
       <p>زُر المحطات الخمس، أنجز أنشطتها، واجمع أختام جوازك. ادخل من أي مدخل أو اضغط على اسم المحطة.</p>
       <ul className="station-list">
         {STATION_ORDER.map((id) => (
@@ -57,16 +62,23 @@ export function StationMission({ id }: { id: StationId }) {
   const seen = def.items.filter((it) => pr.seen.includes(it.key)).length
   const itemsDone = seen === def.items.length
   const ready = itemsDone && pr.activity
+  const { collapsed, toggle } = useCollapsible(ready && !stamped)
   return (
-    <section className={'mission mission--station' + (busy ? ' is-hidden' : '')} style={{ ['--c' as string]: def.color }}>
-      <div className="mission__head">
-        <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden>
-          <StationIcon id={id} color={def.color} />
-        </svg>
-        <div>
-          <span className="kicker">محطة · {def.subtitle}</span>
-          <h3>{def.title}</h3>
+    <section
+      className={'mission mission--station' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}
+      style={{ ['--c' as string]: def.color }}
+    >
+      <div className="mission__bar" role="button" tabIndex={0} aria-expanded={!collapsed} onClick={toggle} onKeyDown={(e) => e.key === 'Enter' && toggle()}>
+        <div className="mission__head">
+          <svg viewBox="0 0 100 100" width="40" height="40" aria-hidden>
+            <StationIcon id={id} color={def.color} />
+          </svg>
+          <div>
+            <span className="kicker">محطة · {def.subtitle}</span>
+            <h3>{def.title}</h3>
+          </div>
         </div>
+        <CollapseToggle collapsed={collapsed} />
       </div>
       <ul className="checks">
         <li className={itemsDone ? 'done' : ''}>

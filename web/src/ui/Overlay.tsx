@@ -12,6 +12,7 @@ import { STATIONS } from '../stations'
 import { isStation } from './Station'
 import { ArrowIcon, Crenels, ExpandIcon } from './icons'
 import { toAr } from './Quiz'
+import { CollapseToggle, useCollapsible } from './collapse'
 
 /* ------------------------------------------------------------------ intro */
 
@@ -158,6 +159,7 @@ export function Mission() {
   const stars = answers.filter((a) => a?.correct).length
   const answered = answers.filter(Boolean).length
   const quizDone = answered === round.length && round.length > 0
+  const { collapsed, toggle } = useCollapsible()
 
   let title = ''
   let body: React.ReactNode = null
@@ -227,8 +229,11 @@ export function Mission() {
     )
   }
   return (
-    <section className={'mission' + (busy ? ' is-hidden' : '')}>
-      <span className="kicker">{title}</span>
+    <section className={'mission' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}>
+      <div className="mission__bar" role="button" tabIndex={0} aria-expanded={!collapsed} onClick={toggle} onKeyDown={(e) => e.key === 'Enter' && toggle()}>
+        <span className="kicker">{title}</span>
+        <CollapseToggle collapsed={collapsed} />
+      </div>
       {body}
       <div className="mission__actions">{actions}</div>
     </section>
