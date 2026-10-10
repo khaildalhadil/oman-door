@@ -812,3 +812,25 @@
     display: none;
   }
 }
+
+/* very narrow phones (≤ 400px): the top bar must fit without clipping its first button */
+@media (max-width: 400px) {
+  .topbar {
+    gap: 6px;
+    padding: 10px 8px;
+  }
+
+  .tools {
+    gap: 4px;
+  }
+
+  .topbar .icon-btn {
+    height: 34px;
+    min-width: 34px;
+    padding: 0 6px;
+  }
+
+  .step {
+    padding: 5px;
+  }
+}
