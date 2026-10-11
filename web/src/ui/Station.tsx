@@ -4,6 +4,7 @@ import { JOURNEY, STATION_ORDER, STATIONS, type StationId } from '../stations'
 import { useStore } from '../store'
 import { PIECES } from '../three/Activities'
 import { CollapseToggle, useCollapsible } from './collapse'
+import { IvoryRoute } from './Challenge'
 import { StationIcon } from './Passport'
 import { toAr } from './Quiz'
 
@@ -20,7 +21,7 @@ export function PlazaMission() {
   const next = STATION_ORDER.find((id) => !stamps[id])
   const { collapsed, toggle } = useCollapsible()
   const step = next
-    ? `الأختام ${toAr(count)}/${toAr(STATION_ORDER.length)} · التالية: ${STATIONS[next].title} (اتبعي السهم)`
+    ? `الأختام ${toAr(count)}/${toAr(STATION_ORDER.length)} · التالية: ${STATIONS[next].short} (اتبعي السهم)`
     : 'جمعتِ الأختام الخمسة! 🏅 افتحي جوازكِ'
   return (
     <section className={'mission' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}>
@@ -39,7 +40,7 @@ export function PlazaMission() {
               <svg viewBox="0 0 100 100" width="26" height="26" aria-hidden>
                 <StationIcon id={id} color={stamps[id] ? '#3ad17e' : STATIONS[id].color} />
               </svg>
-              <span>{STATIONS[id].title}</span>
+              <span>{STATIONS[id].short}</span>
               <b>{stamps[id] ? '✓' : '›'}</b>
             </button>
           </li>
@@ -65,20 +66,32 @@ export function StationMission({ id }: { id: StationId }) {
   const pr = useStore((s) => s.progress[id])
   const stamped = useStore((s) => !!s.stamps[id])
   const setStationQuiz = useStore((s) => s.setStationQuiz)
+  const setRiddleOpen = useStore((s) => s.setRiddleOpen)
   const goTo = useStore((s) => s.goTo)
   const seen = def.items.filter((it) => pr.seen.includes(it.key)).length
   const itemsDone = seen === def.items.length
-  const ready = itemsDone && pr.activity
-  const { collapsed, toggle } = useCollapsible(ready && !stamped)
-  // the one thing to do now (1 discover → 2 activity → 3 challenge)
-  const now = !itemsDone ? 1 : !pr.activity ? 2 : !stamped ? 3 : 4
-  const nowText = [
-    `اكتشفي النقاط المضيئة (${toAr(seen)}/${toAr(def.items.length)})`,
-    `النشاط: ${def.activityTitle}`,
-    'اضغطي «ابدئي تحدي المحطة» ⭐',
-  ][now - 1]
-  const step = now <= 3 ? `${toAr(now)}/٣ · ${nowText}` : '✓ أنهيتِ المحطة، عودي إلى الساحة'
-  const li = (n: number, done: boolean) => (done ? 'done' : now === n ? 'is-now' : '')
+  // the station template: اكتشفي ← المعلومات ← النشاط ← تحدي المستكشف
+  const steps: { label: string; hint: string; done: boolean }[] = []
+  if (def.riddle)
+    steps.push({
+      label: def.riddle.kicker,
+      hint: `حلّي اللغز: «${def.riddle.question}» (اضغطي الزر بالأسفل)`,
+      done: pr.riddle || stamped,
+    })
+  steps.push({
+    label: `المعلومات المضيئة (${toAr(seen)}/${toAr(def.items.length)})`,
+    hint: 'اتبعي السهم الذهبي، واقتربي من كل دائرة مضيئة لتظهر لكِ معلومة ✨',
+    done: itemsDone,
+  })
+  steps.push({ label: `النشاط: ${def.activityTitle}`, hint: def.activityHint, done: pr.activity })
+  steps.push({ label: 'تحدي المستكشف 🗝️ ثم الختم', hint: 'اضغطي «ابدئي تحدي المستكشف» ⭐', done: pr.quizDone || stamped })
+  const nowIdx = steps.findIndex((st) => !st.done)
+  const now = nowIdx < 0 ? steps.length : nowIdx
+  const ready = steps.slice(0, -1).every((st) => st.done)
+  const riddlePending = !!def.riddle && !pr.riddle && !stamped
+  const { collapsed, toggle } = useCollapsible((ready && !stamped) || riddlePending)
+  const step =
+    now < steps.length ? `${toAr(now + 1)}/${toAr(steps.length)} · ${steps[now].label}` : '✓ أنهيتِ المحطة، عودي إلى الساحة'
   return (
     <section
       className={'mission mission--station' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}
@@ -91,29 +104,28 @@ export function StationMission({ id }: { id: StationId }) {
           </svg>
           <div>
             <span className="kicker">محطة · {def.subtitle}</span>
-            <h3>{def.title}</h3>
+            <h3>{def.short}</h3>
             <span className="mission__step">{step}</span>
           </div>
         </div>
         <CollapseToggle collapsed={collapsed} />
       </div>
       <ul className="checks">
-        <li className={li(1, itemsDone)}>
-          ١. اكتشفي النقاط المضيئة ({toAr(seen)}/{toAr(def.items.length)})
-          {now === 1 && <small>اتبعي السهم الذهبي، واقتربي من كل دائرة مضيئة لتظهر لكِ معلومة ✨</small>}
-        </li>
-        <li className={li(2, pr.activity)}>
-          ٢. النشاط: {def.activityTitle}
-          {now === 2 && <small>{def.activityHint}</small>}
-        </li>
-        <li className={li(3, pr.quizDone)}>
-          ٣. تحدي المحطة: ٣ أسئلة صح أو خطأ، ثم الختم 🏅
-        </li>
+        {steps.map((st, k) => (
+          <li key={k} className={st.done ? 'done' : k === now ? 'is-now' : ''}>
+            {toAr(k + 1)}. {st.label}
+            {k === now && <small>{st.hint}</small>}
+          </li>
+        ))}
       </ul>
       <div className="mission__actions">
-        {!stamped ? (
+        {riddlePending ? (
+          <button className="btn btn--primary btn--sm" onClick={() => setRiddleOpen(id)}>
+            🔍 حلّي اللغز
+          </button>
+        ) : !stamped ? (
           <button className="btn btn--primary btn--sm" disabled={!ready} onClick={() => setStationQuiz(id)}>
-            {ready ? 'ابدئي تحدي المحطة ⭐' : '🔒 تحدي المحطة'}
+            {ready ? 'ابدئي تحدي المستكشف 🗝️' : '🔒 تحدي المستكشف'}
           </button>
         ) : (
           <span className="stamp-ok">✓ حصلتِ على ختم المحطة</span>
@@ -122,7 +134,7 @@ export function StationMission({ id }: { id: StationId }) {
           ↩ الساحة
         </button>
       </div>
-      {!ready && !stamped && <small className="mission__lock">🔒 يُفتح التحدي بعد إكمال الخطوتين ١ و٢</small>}
+      {!ready && !stamped && !riddlePending && <small className="mission__lock">🔒 يُفتح التحدي بعد إكمال الخطوات السابقة</small>}
     </section>
   )
 }
@@ -142,11 +154,14 @@ export function StationInfo() {
       <button className="info__close" onClick={() => setInfo(null)} aria-label="إغلاق">
         ✕
       </button>
-      <span className="kicker">{info.key.startsWith('art_') ? '🏺 اكتشاف أثري' : '✨ معلومة جديدة'}</span>
+      <span className="kicker">
+        {info.key.startsWith('art_') ? '🏺 اكتشاف أثري' : info.key.startsWith('scroll_') ? '📜 مخطوطة جديدة' : '✨ معلومة جديدة'}
+      </span>
       <h3 className="info__title">
         <span className="info__icon">{it.icon}</span> {it.title}
       </h3>
       <p className="info__text">{it.text}</p>
+      {it.note && <p className="info__note">{it.note}</p>}
     </aside>
   )
 }
@@ -166,195 +181,6 @@ export function Toast() {
   return (
     <div className="toast" key={toast.t} onClick={() => setVisible(false)}>
       {toast.text}
-    </div>
-  )
-}
-
-/* ------------------------------------------------------- station quiz */
-
-export function StationQuiz() {
-  const id = useStore((s) => s.stationQuiz)
-  const close = useStore((s) => s.setStationQuiz)
-  const finish = useStore((s) => s.finishQuiz)
-  const [i, setI] = useState(0)
-  const [answers, setAnswers] = useState<boolean[]>([])
-  useEffect(() => {
-    setI(0)
-    setAnswers([])
-  }, [id])
-  const def = id ? STATIONS[id] : null
-  const q = def?.quiz[i]
-  const a = answers[i]
-  useEffect(() => {
-    if (a === undefined || !q) return
-    if (a === q.answer) sfx.correct()
-    else sfx.wrong()
-  }, [a, q])
-  if (!def || !q || !id) return null
-  const correct = answers.filter((x, k) => x === def.quiz[k].answer).length
-  const last = i === def.quiz.length - 1
-  const answered = a !== undefined
-  const ok = answered && a === q.answer
-  return (
-    <div className="modal modal--quiz" role="dialog" aria-modal aria-label="تحدي المحطة">
-      <div className={'quiz' + (answered ? (ok ? ' is-correct' : ' is-wrong') : '')}>
-        <div className="quiz__head">
-          <span className="quiz__badge" style={{ background: def.color }}>
-            تحدي {def.title}
-          </span>
-          <span className="quiz__progress">
-            {def.quiz.map((qq, k) => (
-              <i key={k} className={answers[k] === undefined ? (k === i ? 'cur' : '') : answers[k] === qq.answer ? 'ok' : 'bad'} />
-            ))}
-          </span>
-        </div>
-        <p className="quiz__kicker">
-          سؤال {toAr(i + 1)} من {toAr(def.quiz.length)} — صح أم خطأ؟
-        </p>
-        <h2 className="quiz__text">{q.text}</h2>
-        {!answered ? (
-          <div className="quiz__choices">
-            <button className="choice choice--true" onClick={() => setAnswers((x) => Object.assign(x.slice(), { [i]: true }))}>
-              <span className="choice__icon">✓</span>
-              صح
-            </button>
-            <button className="choice choice--false" onClick={() => setAnswers((x) => Object.assign(x.slice(), { [i]: false }))}>
-              <span className="choice__icon">✗</span>
-              خطأ
-            </button>
-          </div>
-        ) : (
-          <div className="quiz__result">
-            <div className="quiz__verdict">{ok ? 'أحسنتِ! 🌟' : `الإجابة الصحيحة: «${q.answer ? 'صح' : 'خطأ'}»`}</div>
-            <p className="quiz__explain">
-              <b>هل تعلمين؟ </b>
-              {q.explain}
-            </p>
-            <button
-              className="btn btn--primary btn--xl"
-              autoFocus
-              onClick={() => {
-                if (last) finish(id, correct)
-                else setI(i + 1)
-              }}
-            >
-              {last ? 'احصلي على الختم 🏅' : 'السؤال التالي'}
-            </button>
-          </div>
-        )}
-        {!answered && (
-          <button className="quiz__later" onClick={() => close(null)}>
-            لاحقاً
-          </button>
-        )}
-      </div>
-    </div>
-  )
-}
-
-/* --------------------------------------------------- trade route game */
-
-const GOODS = [
-  { key: 'frank', name: 'اللبان', icon: '✨', to: 'oman' },
-  { key: 'dates', name: 'التمور', icon: '🌴', to: 'oman' },
-  { key: 'cloves', name: 'القرنفل', icon: '🌿', to: 'zanzibar' },
-  { key: 'ivory', name: 'العاج', icon: '🐘', to: 'zanzibar' },
-  { key: 'spices', name: 'التوابل', icon: '🌶️', to: 'india' },
-  { key: 'cloth', name: 'الأقمشة القطنية', icon: '🧵', to: 'india' },
-]
-const PORTS = [
-  { key: 'oman', name: 'عُمان', x: 520, y: 150 },
-  { key: 'zanzibar', name: 'زنجبار (شرق أفريقيا)', x: 230, y: 470 },
-  { key: 'india', name: 'الهند', x: 760, y: 300 },
-]
-
-function TradeGame() {
-  const setActivity = useStore((s) => s.setActivity)
-  const done = useStore((s) => s.progress.ivory.activity)
-  const [placed, setPlaced] = useState<Record<string, string>>({})
-  const [sel, setSel] = useState<string | null>(null)
-  const [msg, setMsg] = useState('اختاري سلعة من الأسفل 👇 ثم اضغطي على الميناء الذي جاءت منه على الخريطة.')
-  const all = GOODS.every((g) => placed[g.key])
-  const drop = (port: string) => {
-    if (!sel) return setMsg('اختاري سلعة أولاً 👇')
-    const g = GOODS.find((x) => x.key === sel)!
-    if (g.to === port) {
-      sfx.correct()
-      setPlaced((p) => ({ ...p, [g.key]: port }))
-      setSel(null)
-      setMsg(`صحيح! ${g.name} ✓`)
-    } else {
-      sfx.wrong()
-      setMsg(`ليس هنا… فكّري من أين يأتي «${g.name}» 🤔`)
-    }
-  }
-  useEffect(() => {
-    if (all && !done) {
-      useStore.getState().setActivityDone('ivory')
-      setMsg('أحسنتِ! هكذا ربطت التجارة البحرية بين عُمان وشرق أفريقيا والهند 🌊')
-    }
-  }, [all, done])
-  return (
-    <div className="modal" role="dialog" aria-modal aria-label="طريق السلع">
-      <div className="modal__box game">
-        <div className="modal__head">
-          <div>
-            <span className="kicker">نشاط</span>
-            <h3>طريق السلع 🗺️</h3>
-          </div>
-          <button className="icon-btn" onClick={() => setActivity(null)} aria-label="إغلاق">
-            ✕
-          </button>
-        </div>
-        <div className="trade">
-          <svg viewBox="0 0 1000 620" className="trade__map">
-            <rect width="1000" height="620" rx="24" fill="#e9d6ae" />
-            <rect width="1000" height="620" rx="24" fill="#4a8aa0" opacity="0.25" />
-            <path d="M180 0 L620 0 L600 70 L550 110 L500 170 L440 210 L360 230 L270 210 L200 160 L160 80 Z" fill="#ead7ab" stroke="#8a6a3c" strokeWidth="4" />
-            <path d="M0 190 L100 210 L200 270 L260 290 L220 380 L180 470 L120 570 L80 620 L0 620 Z" fill="#ead7ab" stroke="#8a6a3c" strokeWidth="4" />
-            <path d="M660 0 L1000 0 L1000 160 L900 190 L820 350 L780 400 L740 320 L700 200 L660 130 Z" fill="#ead7ab" stroke="#8a6a3c" strokeWidth="4" />
-            <path d="M520 150 Q420 360 230 470 M520 150 Q650 160 760 300" stroke="#7a1f1f" strokeWidth="5" strokeDasharray="16 12" fill="none" />
-            <text x="600" y="300" fontSize="26" fill="#2c5568" textAnchor="middle" fontFamily="Tajawal">بحر العرب</text>
-            <text x="520" y="540" fontSize="26" fill="#2c5568" textAnchor="middle" fontFamily="Tajawal">المحيط الهندي</text>
-            {PORTS.map((p) => {
-              const here = GOODS.filter((g) => placed[g.key] === p.key)
-              return (
-                <g key={p.key} className={'trade__port' + (sel ? ' is-target' : '')} onClick={() => drop(p.key)}>
-                  <circle cx={p.x} cy={p.y} r="70" fill="#7a1f1f" opacity="0.14" />
-                  <circle cx={p.x} cy={p.y} r="18" fill="#7a1f1f" />
-                  <text x={p.x} y={p.y - 32} textAnchor="middle" fontSize="28" fontWeight="800" fill="#3a2412" fontFamily="'Reem Kufi', Tajawal">
-                    {p.name}
-                  </text>
-                  {here.map((g, k) => (
-                    <text key={g.key} x={p.x - 30 + k * 60} y={p.y + 58} textAnchor="middle" fontSize="38">
-                      {g.icon}
-                    </text>
-                  ))}
-                </g>
-              )
-            })}
-          </svg>
-          <div className="trade__goods">
-            {GOODS.map((g) => (
-              <button
-                key={g.key}
-                disabled={!!placed[g.key]}
-                className={'good' + (sel === g.key ? ' is-sel' : '') + (placed[g.key] ? ' is-placed' : '')}
-                onClick={() => (setSel(g.key), sfx.click())}
-              >
-                <span>{g.icon}</span>
-                {g.name}
-              </button>
-            ))}
-          </div>
-          <p className="trade__msg">{msg}</p>
-          {all && (
-            <button className="btn btn--primary" onClick={() => setActivity(null)}>
-              متابعة ✓
-            </button>
-          )}
-        </div>
-      </div>
     </div>
   )
 }
@@ -461,7 +287,7 @@ function Wardrobe() {
 export function ActivityModals() {
   const activity = useStore((s) => s.activity)
   if (!activity) return null
-  if (activity === 'trade') return <TradeGame />
+  if (activity === 'trade') return <IvoryRoute />
   if (activity === 'wardrobe') return <Wardrobe />
   if (activity.startsWith('piece:')) return <NameGame pieceKey={activity.slice(6)} />
   return null

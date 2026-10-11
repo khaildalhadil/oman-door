@@ -95,7 +95,7 @@ export function TopBar() {
     scene === 'plaza'
       ? 'ساحة الرحلة'
       : isStation(scene)
-        ? `محطة ${STATIONS[scene].title}`
+        ? `محطة ${STATIONS[scene].short}`
         : scene === 'gate'
           ? 'بوابة عُمان'
           : scene === 'fort'

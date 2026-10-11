@@ -50,7 +50,7 @@ LON0, LAT0, KS = 56.0, 21.4, 1.12
 COSL = math.cos(math.radians(21.4))
 MAP_X, MAP_Y, MAP_Z = 0.0, 0.0, 0.55
 PINS = {
-    "nav": (59.53, 22.57, "صور"),
+    "nav": (58.13, 22.57, "المضيبي"),
     "turtles": (59.78, 22.25, "رأس الجنز"),
     "ivory": (58.57, 23.62, "مسقط"),
     "clothing": (57.53, 22.93, "نزوى"),
@@ -359,18 +359,18 @@ def decorate(M, sid, W, col_local, statics):
         return mats_.index(mat)
 
     if sid == "nav":
-        props.dhow(bm, W @ lib.T(-6.2, -2.4, 0.95) @ lib.Rz(rad(200)), 4.4,
-                   {'hull': m('wood'), 'deck': m('wood'), 'sail': m('sail'), 'rope': m('rope'), 'trim': m('brass'),
-                    'wood': m('wdark')})
-        lib.box(bm, (0, 0, 0.3), (2.6, 0.9, 0.6), mi=m('wdark'), M=W @ lib.T(-6.2, -2.4, 0))
-        col_local(-6.2, -2.4, 1.5, 1.2)
-        props.anchor(bm, W @ lib.T(5.4, -2.2, 0) @ lib.Rz(rad(-20)) @ lib.Ry(rad(12)), 1.0, m('iron'))
-        col_local(5.4, -2.2, 0.6, 1.6)
-        for (x, y) in ((4.6, -0.2), (5.3, 0.3)):
-            props.barrel(bm, W @ lib.T(x, y, 0), 1.0, m('wood'), m('iron'))
-            col_local(x, y, 0.35, 0.8)
-        props.rope_coil(bm, W @ lib.T(3.6, -1.9, 0), 1.2, m('rope'))
-        props.astrolabe(bm, W @ lib.T(0, -1.6, 5.95), 0.48, m('brass'))
+        # «مجلس العلم» (Hamad bin Saif: judge, historian, author): a great open book, a reading stand,
+        # a manuscript chest; an open-book emblem crowns the gate
+        lib.box(bm, (0, 0, 0.45), (1.7, 1.2, 0.9), mi=m('wdark'), M=W @ lib.T(-6.2, -2.4, 0))
+        props.open_book(bm, W @ lib.T(-6.2, -2.4, 0.9) @ lib.Rx(rad(-14)), 1.55, 1.05, m('fabric'), m('board'), angle=0.2)
+        col_local(-6.2, -2.4, 1.05, 1.5)
+        props.lectern(bm, W @ lib.T(3.6, -2.9, 0) @ lib.Rz(rad(-15)), m('wdark'), m('fabric'), m('board'))
+        col_local(3.6, -2.9, 0.4, 0.8)
+        props.chest(bm, W @ lib.T(5.4, -1.2, 0), 1.1, 0.6, 0.6, m('wdark'), m('brass'))
+        for k in range(5):
+            props.scroll(bm, W @ lib.T(5.4, -1.35 + (k % 3) * 0.14, 0.68 + (k // 3) * 0.1), 0.6, 0.055, m('board'), m('wood'))
+        col_local(5.4, -1.2, 0.7, 1.2)
+        props.open_book(bm, W @ lib.T(0, -1.62, 6.0) @ lib.Rx(math.pi / 2), 1.3, 0.9, m('brass'), m('board'), angle=0.25)
     elif sid == "sumhuram":
         for (x, y, broken) in ((-3.0, -2.3, False), (3.0, -2.3, True), (-5.4, -0.6, True)):
             props.column(bm, W @ lib.T(x, y, 0), 4.6, 0.36, m('stone'), broken=broken)

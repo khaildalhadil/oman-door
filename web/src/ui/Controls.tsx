@@ -54,7 +54,7 @@ export const PROMPTS: Record<string, { icon: string; label: string; verb: string
   lamp: { icon: '💡', label: 'أطفئي', verb: 'لإطفاء المصباح' },
   map: { icon: '🗺', label: 'الخريطة', verb: 'لفتح خريطة التجارة' },
   mirror: { icon: '🪞', label: 'المرآة', verb: 'لفتح خزانة مريم' },
-  stars: { icon: '✨', label: 'السماء', verb: 'للنظر إلى النجوم' },
+  scroll: { icon: '📜', label: 'اجمعي', verb: 'لجمع المخطوطة' },
   piece: { icon: '👘', label: 'ما اسمها؟', verb: 'لمعرفة اسم القطعة' },
 }
 

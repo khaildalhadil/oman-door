@@ -8,13 +8,15 @@ export type { StationId }
 
 export interface StationProgress {
   seen: string[]
+  /** «اكتشفي…» riddle solved */
+  riddle: boolean
   activity: boolean
   quizDone: boolean
   correct: number
 }
 
 const emptyProgress = (): Record<StationId, StationProgress> =>
-  Object.fromEntries(STATION_ORDER.map((id) => [id, { seen: [], activity: false, quizDone: false, correct: 0 }])) as unknown as Record<
+  Object.fromEntries(STATION_ORDER.map((id) => [id, { seen: [], riddle: false, activity: false, quizDone: false, correct: 0 }])) as unknown as Record<
     StationId,
     StationProgress
   >
@@ -27,7 +29,9 @@ function loadJourney() {
       const j = JSON.parse(raw)
       return {
         stamps: (j.stamps ?? {}) as Partial<Record<StationId, number>>,
-        progress: { ...emptyProgress(), ...(j.progress ?? {}) } as Record<StationId, StationProgress>,
+        progress: Object.fromEntries(
+          Object.entries(emptyProgress()).map(([k, v]) => [k, { ...v, ...(j.progress?.[k] ?? {}) }]),
+        ) as Record<StationId, StationProgress>,
         school: (j.school ?? '') as string,
       }
     }
@@ -92,11 +96,15 @@ interface State {
   stampAward: StationId | 'final' | null
   info: { station: StationId; key: string } | null
   stationQuiz: StationId | null
+  /** «اكتشفي…» riddle window */
+  riddleOpen: StationId | null
   activity: string | null
   markSeen: (id: StationId, key: string) => void
   setInfo: (v: { station: StationId; key: string } | null) => void
   setActivityDone: (id: StationId) => void
   setStationQuiz: (id: StationId | null) => void
+  setRiddleOpen: (id: StationId | null) => void
+  solveRiddle: (id: StationId) => void
   finishQuiz: (id: StationId, correct: number) => void
   setPassportOpen: (b: boolean) => void
   closeStampAward: () => void
@@ -178,6 +186,7 @@ export const useStore = create<State>((set, get) => ({
   stampAward: null,
   info: null,
   stationQuiz: null,
+  riddleOpen: null,
   activity: null,
   markSeen: (id, key) => {
     const p = get().progress[id]
@@ -195,6 +204,14 @@ export const useStore = create<State>((set, get) => ({
     saveJourney({ ...get(), progress })
   },
   setStationQuiz: (stationQuiz) => set({ stationQuiz }),
+  setRiddleOpen: (riddleOpen) => set({ riddleOpen }),
+  solveRiddle: (id) => {
+    const p = get().progress[id]
+    if (p.riddle) return
+    const progress = { ...get().progress, [id]: { ...p, riddle: true } }
+    set({ progress })
+    saveJourney({ ...get(), progress })
+  },
   finishQuiz: (id, correct) => {
     const p = get().progress[id]
     const progress = { ...get().progress, [id]: { ...p, quizDone: true, correct: Math.max(p.correct, correct) } }
@@ -313,6 +330,7 @@ export const modalOpen = () => {
     s.passportOpen ||
     s.stampAward !== null ||
     s.stationQuiz !== null ||
+    s.riddleOpen !== null ||
     s.activity !== null
   )
 }

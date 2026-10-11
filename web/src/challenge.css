@@ -1,0 +1,443 @@
+/* =====================================================================
+   Station template: riddle («اكتشفي…»), explorer challenge, fact card,
+   reference, and the ivory trader's route  (cards use the light .quiz look)
+   ===================================================================== */
+
+.modal--quiz .quiz {
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+}
+
+/* ------------------------------------------------------------- riddle */
+.riddle .quiz__badge {
+  display: inline-block;
+  margin-bottom: 10px;
+}
+
+.riddle__text {
+  margin: 4px 0 12px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: rgba(122, 31, 31, 0.06);
+  border: 1px dashed rgba(122, 31, 31, 0.35);
+  font-size: 1.05rem;
+  line-height: 1.95;
+  color: #3a2412;
+  text-align: right;
+}
+
+.riddle__reveal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: pop 0.5s cubic-bezier(0.2, 1.4, 0.4, 1) both;
+}
+
+.riddle__icon {
+  width: 96px;
+  height: 96px;
+  padding: 12px;
+  border-radius: 50%;
+  background: #fffaf0;
+  border: 4px solid var(--c, #7a1f1f);
+  box-shadow: 0 10px 26px -10px rgba(0, 0, 0, 0.45);
+}
+
+.riddle__sub {
+  margin: -6px 0 14px;
+  color: #6a5238;
+  font-weight: 600;
+}
+
+.choice.is-wrong,
+.choice.is-wrong:disabled {
+  background: linear-gradient(180deg, #b9a58c, #9c8870);
+  opacity: 0.6;
+  text-decoration: line-through;
+  animation: shake 0.4s ease both;
+}
+
+.choice.is-right {
+  background: linear-gradient(180deg, #34c47a, #1f8f55);
+}
+
+/* ---------------------------------------------------------- challenge */
+.challenge__prompt {
+  font-size: 1.3rem;
+  line-height: 1.7;
+  margin-bottom: 14px;
+}
+
+.challenge__msg {
+  margin: 10px 0 0;
+  font-weight: 700;
+}
+
+.challenge__msg.is-bad {
+  color: #b5401f;
+}
+
+.challenge__count {
+  margin: 8px 0 0;
+  color: #6a5238;
+  font-size: 0.9rem;
+}
+
+.challenge__check {
+  margin-top: 14px;
+}
+
+.challenge__check:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+
+/* ordering: numbered slots + pool of chips */
+.order {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.order__slot,
+.match__row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 2px dashed rgba(122, 31, 31, 0.3);
+  background: rgba(255, 255, 255, 0.5);
+  color: #3a2412;
+  font: inherit;
+  font-weight: 700;
+  text-align: right;
+  transition: background 0.2s, border-color 0.2s;
+}
+
+.order__slot b {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: #7a1f1f;
+  color: #fff;
+}
+
+.order__slot span,
+.match__row span {
+  flex: 1;
+  min-width: 0;
+}
+
+.order__slot:not(.is-filled) span,
+.match__row span:only-of-type {
+  color: #8a7258;
+  font-weight: 500;
+}
+
+.order__slot.is-filled,
+.match__row:has(span:not(:empty)) {
+  border-style: solid;
+  background: #fff;
+}
+
+.order__slot.is-ok,
+.match__row.is-ok {
+  border: 2px solid #2fb86c;
+  background: #e9f9ef;
+}
+
+.order__slot.is-ok b {
+  background: #2fb86c;
+}
+
+.order__slot.is-bad,
+.match__row.is-bad {
+  border: 2px solid #e0623b;
+  background: #fdebe4;
+  animation: shake 0.4s ease both;
+}
+
+.chips-pool {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(122, 31, 31, 0.15);
+}
+
+.pool-chip {
+  padding: 10px 14px;
+  border-radius: 14px;
+  border: 0;
+  background: linear-gradient(180deg, #a3302b, #7a1f1f);
+  color: #fff;
+  font: inherit;
+  font-weight: 700;
+  line-height: 1.5;
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
+  transition: transform 0.12s;
+}
+
+.pool-chip:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18);
+}
+
+/* matching */
+.match {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.match__row {
+  flex-wrap: wrap;
+}
+
+.match__row b {
+  flex: none;
+  padding: 4px 10px;
+  border-radius: 10px;
+  background: #138a8a;
+  color: #fff;
+}
+
+.match__row.is-active {
+  border: 2px solid #c9a14a;
+  background: #fff6dc;
+  box-shadow: 0 0 0 4px rgba(201, 161, 74, 0.2);
+}
+
+/* multiple choice (pick N) */
+.multi {
+  display: grid;
+  gap: 8px;
+}
+
+.multi__opt {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  border: 2px solid rgba(122, 31, 31, 0.22);
+  background: #fff;
+  color: #3a2412;
+  font: inherit;
+  font-weight: 700;
+  text-align: right;
+}
+
+.multi__opt i {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 24px;
+  height: 24px;
+  border-radius: 7px;
+  border: 2px solid rgba(122, 31, 31, 0.4);
+  font-style: normal;
+  color: #fff;
+}
+
+.multi__opt.is-sel {
+  border-color: #7a1f1f;
+  background: #fff3e6;
+}
+
+.multi__opt.is-sel i {
+  background: #7a1f1f;
+  border-color: #7a1f1f;
+}
+
+.multi__opt.is-ok {
+  border-color: #2fb86c;
+  background: #e9f9ef;
+}
+
+.multi__opt.is-ok i {
+  background: #2fb86c;
+  border-color: #2fb86c;
+}
+
+.multi__opt.is-bad {
+  border-color: #e0623b;
+  background: #fdebe4;
+  animation: shake 0.4s ease both;
+}
+
+/* ------------------------------------------------- reward: fact + ref */
+.reward {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+
+.fact {
+  width: 100%;
+  perspective: 900px;
+}
+
+.fact__closed {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 18px 14px;
+  border-radius: 18px;
+  border: 2px solid #c9a14a;
+  background: linear-gradient(160deg, #7a1f1f, #4f1212);
+  color: #fff3d6;
+  font: inherit;
+  box-shadow: 0 10px 24px -10px rgba(0, 0, 0, 0.5);
+  animation: glowPulse 1.8s ease-in-out infinite;
+}
+
+.fact__closed b {
+  font-size: 1.15rem;
+}
+
+.fact__closed small {
+  color: #f3d78f;
+}
+
+.fact__bulb {
+  font-size: 2.2rem;
+}
+
+@keyframes glowPulse {
+  50% {
+    box-shadow: 0 0 0 6px rgba(243, 215, 143, 0.35), 0 10px 24px -10px rgba(0, 0, 0, 0.5);
+  }
+}
+
+.fact__body {
+  padding: 16px 18px;
+  border-radius: 18px;
+  border: 2px solid #c9a14a;
+  background: #fffaf0;
+  text-align: right;
+  animation: flipIn 0.55s ease both;
+}
+
+.fact__body b {
+  display: block;
+  margin-bottom: 6px;
+  color: #7a1f1f;
+  font-size: 1.1rem;
+}
+
+.fact__body p {
+  margin: 0 0 8px;
+  line-height: 1.85;
+  color: #3a2412;
+  font-weight: 600;
+}
+
+@keyframes flipIn {
+  from {
+    transform: rotateX(-80deg);
+    opacity: 0;
+  }
+}
+
+.ref {
+  margin: 0;
+  font-size: 0.85rem;
+  color: #6a5238;
+  line-height: 1.7;
+}
+
+.reward__hint {
+  color: #8a7258;
+}
+
+/* note line under an information card (not from the encyclopedia) */
+.info__note {
+  margin: 8px 0 0;
+  padding-top: 8px;
+  border-top: 1px dashed var(--line);
+  font-size: 0.85rem;
+  color: var(--gold-2);
+}
+
+/* -------------------------------------------------- ivory: route map */
+.route__ask {
+  margin: 0 0 8px;
+  padding: 8px 12px;
+  border-radius: 12px;
+  background: rgba(231, 201, 127, 0.14);
+  color: #fff4dc;
+  font-weight: 800;
+  text-align: center;
+}
+
+.route__stop {
+  cursor: pointer;
+}
+
+.route__stop.is-bad circle:last-of-type,
+.route__stop.is-bad text {
+  animation: shake 0.4s ease both;
+}
+
+.route__stop.is-bad circle:last-of-type {
+  fill: #e0623b;
+}
+
+.route__line {
+  animation: dash 1s linear infinite;
+}
+
+@keyframes dash {
+  to {
+    stroke-dashoffset: -30;
+  }
+}
+
+@media (max-width: 640px) {
+  .challenge__prompt {
+    font-size: 1.08rem;
+  }
+
+  .riddle__text {
+    font-size: 0.95rem;
+    line-height: 1.8;
+    padding: 10px 12px;
+  }
+
+  .order__slot,
+  .match__row,
+  .multi__opt,
+  .pool-chip {
+    font-size: 0.9rem;
+  }
+
+  .quiz {
+    padding: 16px 14px 18px;
+  }
+}
+
+/* success line in the explorer challenge (long sentences, not a one-word verdict) */
+.challenge .quiz__verdict {
+  font-size: 1.12rem;
+  line-height: 1.8;
+  color: #1f8f55;
+  margin: 12px 0 10px;
+  font-family: Tajawal, sans-serif;
+  font-weight: 800;
+}

@@ -6,6 +6,7 @@ import { useStore } from './store'
 import './styles.css'
 import './game.css'
 import './journey.css'
+import './challenge.css'
 
 if (import.meta.env.DEV) {
   ;(window as unknown as { __store: typeof useStore }).__store = useStore
@@ -42,6 +43,7 @@ if (import.meta.env.DEV) {
     }
     if (q.get('activity')) st.setActivity(q.get('activity'))
     if (q.get('squiz')) st.setStationQuiz(q.get('squiz') as 'nav')
+    if (q.get('riddle')) st.setRiddleOpen(q.get('riddle') as 'nav')
   }, Number(q.get('delay') ?? 7000))
   // window.__dev: game internals for automated smoke tests / recording the demo video
   Promise.all([import('./three/Player'), import('./three/Activities'), import('./game/input'), import('./stations')]).then(([P, A, I, S]) => {

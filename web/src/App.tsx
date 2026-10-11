@@ -24,7 +24,8 @@ import {
 import { Certificate, QuizModal } from './ui/Quiz'
 import { TeacherPanel } from './ui/Teacher'
 import { PassportButton, PassportModal, StampAward } from './ui/Passport'
-import { ActivityModals, isStation, PlazaMission, StationInfo, StationMission, StationQuiz, Toast } from './ui/Station'
+import { ActivityModals, isStation, PlazaMission, StationInfo, StationMission, Toast } from './ui/Station'
+import { StationChallenge, StationRiddle } from './ui/Challenge'
 
 const params = new URLSearchParams(window.location.search)
 const FX = params.get('fx') !== '0'
@@ -88,7 +89,8 @@ export default function App() {
         </>
       )}
       <QuizModal />
-      <StationQuiz />
+      <StationRiddle />
+      <StationChallenge />
       <ActivityModals />
       <Certificate />
       <PassportModal />

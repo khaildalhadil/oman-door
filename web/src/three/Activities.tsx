@@ -1,6 +1,6 @@
-import { Html, Line } from '@react-three/drei'
+import { Html } from '@react-three/drei'
 import type { CameraControlsImpl } from '@react-three/drei'
-import { useFrame, type ThreeEvent } from '@react-three/fiber'
+import { useFrame } from '@react-three/fiber'
 import { useEffect, useMemo, useRef, useState, type RefObject } from 'react'
 import * as THREE from 'three'
 import { consumeInteract } from '../game/input'
@@ -9,7 +9,7 @@ import { groundAt, type World } from '../game/world'
 import type { StationId } from '../stations'
 import { modalOpen, useStore } from '../store'
 import { worldPos, type V3 } from './helpers'
-import { camOverride, player } from './Player'
+import { player } from './Player'
 
 /** Objective marker published by the running activity (read by StationScene). */
 export const activityNav = { target: null as THREE.Vector3 | null, label: '' }
@@ -24,7 +24,7 @@ interface Props {
 }
 
 export function StationActivity(p: Props) {
-  if (p.id === 'nav') return <StarsActivity {...p} />
+  if (p.id === 'nav') return <ScrollsActivity {...p} />
   if (p.id === 'sumhuram') return <DigActivity {...p} />
   if (p.id === 'turtles') return <TurtleActivity {...p} />
   if (p.id === 'ivory') return <TradeActivity {...p} />
@@ -50,122 +50,99 @@ function usePromptZone(key: string) {
   }
 }
 
-/* ===================================================== 1. navigation: stars */
+/* ================================================= 1. Hamad bin Saif: manuscripts */
 
-const ALT = (23 * Math.PI) / 180 // Polaris altitude ≈ latitude of Oman
-const R = 260
-const DIR = new THREE.Vector3(0, Math.sin(ALT), -Math.cos(ALT))
-const UPT = new THREE.Vector3(0, Math.cos(ALT), Math.sin(ALT))
-const RIGHT = new THREE.Vector3(1, 0, 0)
-const sky = (ox: number, oy: number) => DIR.clone().multiplyScalar(R).addScaledVector(RIGHT, ox * R).addScaledVector(UPT, oy * R)
-// Little Dipper (الدب الأصغر) hanging from Polaris
-const DIPPER = [
-  [0, 0], [0.05, -0.035], [0.085, -0.09], [0.115, -0.15], [0.095, -0.215], [0.165, -0.25], [0.19, -0.185], [0.115, -0.15],
-].map(([x, y]) => sky(x, y))
-const BIG_STARS = Array.from({ length: 26 }, (_, i) => {
-  const a = (i * 2.399) % (Math.PI * 2)
-  const r = 0.12 + ((i * 37) % 23) / 23 * 0.5
-  return sky(Math.cos(a) * r * 1.4, Math.sin(a) * r * 0.55 - 0.05)
-})
-
-function StarsActivity({ empties, controls }: Props) {
-  const done = useStore((s) => s.progress.nav.activity)
-  const [gazing, setGazing] = useState(false)
-  const halo = useRef<THREE.Mesh>(null!)
-  const spot = useMemo(() => new THREE.Vector3(...worldPos(empties['StarSpot'])), [empties])
-  const zone = usePromptZone('stars')
-  useEffect(() => {
-    activityNav.target = done ? null : spot
-    activityNav.label = 'نهاية الرصيف'
-  }, [done, spot])
-  useEffect(
-    () => () => {
-      camOverride.range = null
-      camOverride.lift = 0
-    },
-    [],
+function ScrollMesh() {
+  return (
+    <group rotation-z={Math.PI / 2}>
+      <mesh castShadow>
+        <cylinderGeometry args={[0.11, 0.11, 0.62, 20]} />
+        <meshStandardMaterial color="#efe0bd" roughness={0.85} />
+      </mesh>
+      {[-0.34, 0.34].map((y) => (
+        <mesh key={y} position={[0, y, 0]}>
+          <cylinderGeometry args={[0.045, 0.045, 0.08, 10]} />
+          <meshStandardMaterial color="#5a3a1e" roughness={0.6} />
+        </mesh>
+      ))}
+      <mesh>
+        <torusGeometry args={[0.115, 0.018, 8, 24]} />
+        <meshStandardMaterial color="#9b2c2c" roughness={0.6} />
+      </mesh>
+    </group>
   )
+}
 
-  const prevDist = useRef(6)
-  const lookUp = () => {
-    const c = controls.current
-    if (!c) return
-    setGazing(true)
-    prevDist.current = c.distance
-    // close behind her and above her head, looking up (setting the range alone does not move the camera)
-    camOverride.range = [2.0, 2.6]
-    camOverride.lift = 1.3
-    c.maxPolarAngle = 2.1
-    c.minDistance = 2.0 // dollyTo clamps to the current range
-    c.dollyTo(2.3, true)
-    c.rotateTo(0, 2.02, true)
-    useStore.getState().showToast('ابحثي في السماء عن النجم داخل الدائرة الذهبية: إنه «نجم الجاه» — اضغطي عليه ✨')
-  }
-  const restore = () => {
-    const c = controls.current
-    camOverride.range = null
-    camOverride.lift = 0
-    if (c) {
-      c.maxPolarAngle = 1.62
-      c.rotateTo(c.azimuthAngle, 1.25, true)
-      c.maxDistance = Math.max(c.maxDistance, prevDist.current)
-      c.dollyTo(prevDist.current, true)
-    }
-    setGazing(false)
-  }
-
-  useFrame((s) => {
+function ScrollsActivity({ empties, world }: Props) {
+  const done = useStore((s) => s.progress.nav.activity)
+  const spots = useMemo(
+    () =>
+      [1, 2, 3, 4]
+        .filter((n) => empties['Scroll_' + n])
+        .map((n) => {
+          const p = worldPos(empties['Scroll_' + n])
+          return new THREE.Vector3(p[0], groundAt(world, p[0], p[2], 50), p[2])
+        }),
+    [empties, world],
+  )
+  const [got, setGot] = useState<boolean[]>(() => spots.map(() => done))
+  const refs = useRef<(THREE.Group | null)[]>([])
+  const zone = usePromptZone('scroll')
+  const take = (i: number) => {
+    if (got[i]) return
+    sfx.ding()
+    const next = got.slice()
+    next[i] = true
+    setGot(next)
     const st = useStore.getState()
-    const near = !st.busy && !modalOpen() && !done && !gazing && xzDist(spot, player.pos) < 2.6
-    if (zone(near)) lookUp()
-    if (gazing && !done && xzDist(spot, player.pos) > 4.5) restore()
-    if (halo.current) {
-      const k = 1 + Math.sin(s.clock.elapsedTime * 3) * 0.25
-      halo.current.scale.setScalar(gazing && !done ? k * 1.6 : k)
-      halo.current.lookAt(s.camera.position)
-    }
-  })
-
-  const found = (e: ThreeEvent<MouseEvent>) => {
-    e.stopPropagation()
-    if (done) return
-    sfx.correct()
-    useStore.getState().setActivityDone('nav')
-    useStore.getState().showToast('أحسنتِ! هذا «نجم الجاه» (النجم القطبي)؛ اهتدى به البحّارة إلى جهة الشمال ⭐')
-    setTimeout(restore, 3500)
+    st.setInfo({ station: 'nav', key: 'scroll_' + (i + 1) })
+    const n = next.filter(Boolean).length
+    if (n === spots.length) {
+      setTimeout(() => {
+        st.setActivityDone('nav')
+        st.showToast('جمعتِ المخطوطات الأربع! 📜 رتّبيها الآن في «تحدي المستكشف» 🗝️')
+      }, 900)
+    } else st.showToast(`وجدتِ مخطوطة! 📜 (${n}/${spots.length})`)
   }
-
+  useFrame((s) => {
+    refs.current.forEach((g, i) => {
+      if (!g) return
+      g.position.y = spots[i].y + 1.1 + Math.sin(s.clock.elapsedTime * 2 + i) * 0.08
+      g.rotation.y += 0.015
+    })
+    const next = got.findIndex((g) => !g)
+    activityNav.target = next >= 0 ? spots[next] : null
+    activityNav.label = 'مخطوطة'
+    const st = useStore.getState()
+    if (st.busy || modalOpen()) return
+    let near = -1
+    spots.forEach((p, i) => {
+      if (!got[i] && xzDist(p, player.pos) < 1.8) near = i
+    })
+    if (zone(near >= 0)) take(near)
+  })
   return (
     <group>
-      {BIG_STARS.map((p, i) => (
-        <mesh key={i} position={p}>
-          <sphereGeometry args={[0.9 + (i % 3) * 0.3, 8, 6]} />
-          <meshBasicMaterial color={i % 4 ? '#e8efff' : '#ffe6c4'} toneMapped={false} fog={false} />
-        </mesh>
-      ))}
-      {DIPPER.slice(1, 7).map((p, i) => (
-        <mesh key={'d' + i} position={p}>
-          <sphereGeometry args={[1.3, 8, 6]} />
-          <meshBasicMaterial color="#f2f5ff" toneMapped={false} fog={false} />
-        </mesh>
-      ))}
-      <mesh position={DIPPER[0]}>
-        <sphereGeometry args={[2.0, 12, 8]} />
-        <meshBasicMaterial color="#fff4d0" toneMapped={false} fog={false} />
-      </mesh>
-      <mesh ref={halo} position={DIPPER[0]}>
-        <ringGeometry args={[4, 5.2, 32]} />
-        <meshBasicMaterial color="#ffd36b" transparent opacity={done ? 0.0 : 0.55} toneMapped={false} fog={false} depthWrite={false} />
-      </mesh>
-      <mesh position={DIPPER[0]} onClick={found} onPointerOver={() => (document.body.style.cursor = 'pointer')} onPointerOut={() => (document.body.style.cursor = '')}>
-        <sphereGeometry args={[11, 8, 6]} />
-        <meshBasicMaterial visible={false} />
-      </mesh>
-      {done && <Line points={DIPPER} color="#ffd36b" lineWidth={2} transparent opacity={0.8} />}
-      {done && (
-        <Html position={DIPPER[0].clone().add(new THREE.Vector3(0, 9, 0))} center zIndexRange={[25, 5]} style={{ pointerEvents: 'none' }}>
-          <div className="sky-label">نجم الجاه ⭐</div>
-        </Html>
+      {spots.map((p, i) =>
+        got[i] ? null : (
+          <group key={i}>
+            <group ref={(g) => (refs.current[i] = g)} position={[p.x, p.y + 1.1, p.z]}>
+              <ScrollMesh />
+              <mesh onClick={(e) => (e.stopPropagation(), xzDist(p, player.pos) < 4 && take(i))}>
+                <sphereGeometry args={[0.6, 10, 8]} />
+                <meshBasicMaterial visible={false} />
+              </mesh>
+            </group>
+            <mesh position={[p.x, p.y + 0.03, p.z]} rotation-x={-Math.PI / 2}>
+              <ringGeometry args={[0.7, 0.85, 40]} />
+              <meshBasicMaterial color="#ffd36b" transparent opacity={0.7} toneMapped={false} depthWrite={false} />
+            </mesh>
+            <pointLight position={[p.x, p.y + 1.3, p.z]} intensity={2.2} distance={3.5} color="#ffd9a0" />
+            <Html position={[p.x, p.y + 1.9, p.z]} center zIndexRange={[25, 5]} style={{ pointerEvents: 'none' }}>
+              <div className="dig-badge">📜</div>
+            </Html>
+          </group>
+        ),
       )}
     </group>
   )
@@ -464,8 +441,10 @@ function mapTexture() {
     g.quadraticCurveTo(c2[0] * W, c2[1] * H, b[0] * W, b[1] * H)
     g.stroke()
   }
-  route([0.52, 0.22], [0.23, 0.66], [0.42, 0.55])
-  route([0.53, 0.2], [0.74, 0.42], [0.66, 0.24])
+  // ivory route: inland Africa -> coast -> Zanzibar -> world markets
+  route([0.07, 0.6], [0.19, 0.63], [0.13, 0.57])
+  route([0.19, 0.63], [0.225, 0.66], [0.21, 0.62])
+  route([0.225, 0.66], [0.93, 0.12], [0.55, 0.62])
   g.setLineDash([])
   // ports
   const port = (x: number, y: number, name: string) => {
@@ -481,12 +460,13 @@ function mapTexture() {
   }
   port(0.52, 0.2, 'عُمان')
   port(0.225, 0.66, 'زنجبار')
-  port(0.75, 0.42, 'الهند')
+  port(0.07, 0.6, 'داخل إفريقيا')
+  port(0.93, 0.12, 'الأسواق العالمية')
   g.font = '600 40px "Tajawal", sans-serif'
   g.fillStyle = 'rgba(40,70,90,0.7)'
   g.fillText('بحر العرب', 0.6 * W, 0.45 * H)
   g.fillText('المحيط الهندي', 0.5 * W, 0.82 * H)
-  g.fillText('شرق أفريقيا', 0.1 * W, 0.5 * H)
+  g.fillText('إفريقيا', 0.1 * W, 0.42 * H)
   // compass rose
   g.save()
   g.translate(0.88 * W, 0.82 * H)

@@ -10,12 +10,15 @@ import { toAr } from './Quiz'
 export function StationIcon({ id, color }: { id: StationId | 'final'; color: string }) {
   switch (id) {
     case 'nav':
+      // open book + quill (Hamad bin Saif: judge, historian, author)
       return (
         <g fill={color} stroke={color}>
-          <path d="M10 62 Q50 82 92 58 L86 70 Q50 88 16 72 Z" />
-          <path d="M52 64 L58 12" strokeWidth="4" fill="none" />
-          <path d="M28 22 L82 8 L58 58 Z" opacity="0.85" />
-          <path d="M8 86 Q18 80 28 86 T48 86 T68 86 T90 86" strokeWidth="4" fill="none" />
+          <path d="M6 40 Q27 31 48 40 L48 90 Q27 81 6 90 Z" />
+          <path d="M52 40 Q73 31 94 40 L94 90 Q73 81 52 90 Z" />
+          <path d="M14 52 Q27 47 40 52 M14 63 Q27 58 40 63 M14 74 Q27 69 40 74 M60 52 Q73 47 86 52 M60 63 Q73 58 86 63"
+            stroke="#fff8e8" strokeWidth="3" fill="none" opacity="0.85" />
+          <path d="M80 4 Q97 9 86 28 L66 52 L61 48 Z" opacity="0.9" />
+          <path d="M66 52 L58 62" strokeWidth="3" fill="none" />
         </g>
       )
     case 'sumhuram':

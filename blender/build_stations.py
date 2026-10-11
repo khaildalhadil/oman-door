@@ -6,7 +6,8 @@ Each scene exports  web/public/models/station_<id>.glb  +  station_<id>_collider
 Named empties used by the web app:
   Item_<key>   information points        Exit          portal back to the plaza
   Dig_<n>/Art_<n>  (sumhuram)            Lamp_<n>, Hatch_<n>  (turtles)
-  StarSpot (nav)   MapTop (ivory)        Piece_<key>, Mirror  (clothing)
+  Scroll_<n> (nav) MapTop (ivory)        Piece_<key>, Mirror  (clothing)
+  Board_<key> painted boards (Board_name = station title plaque)
   Light_*      lantern positions"""
 import sys
 import os
@@ -267,155 +268,155 @@ def finish(name, statics, bounds, spawn, ground=0.0):
     lib.export_colliders("station_" + name, bounds=bounds, ground=ground, spawn=spawn)
 
 
-# =========================================================== 1. navigation
+# ====================================================== 1. Hamad bin Saif
 def build_nav():
+    """«مجلس العلم»: majlis + library for the station on حمد بن سيف البوسعيدي (judge, historian, author).
+    No figure of the person: the story is told by places, books and manuscripts."""
     lib.reset()
     lib.use_collection("StationNav")
     M = base_mats()
     statics = []
-    G = 0.55
-    # quay / land plateau and harbour wall
+    rnd = random.Random(19)
+    X, Y, H = 10.0, 7.0, 6.2
+    room(M, statics, X, Y, H, wall='inner', windows=[('E', -3.0), ('W', -3.0)], niches=[('N', -7.0), ('N', 7.0)])
+    paper = lib.material("ST_Paper", (0.93, 0.88, 0.74), 0.9)
+    covers = [lib.material(n, c, 0.7) for n, c in (("ST_BookRed", (0.42, 0.09, 0.07)), ("ST_BookGreen", (0.08, 0.27, 0.16)),
+                                                   ("ST_BookBlue", (0.10, 0.16, 0.34)), ("ST_BookBrown", (0.33, 0.2, 0.1)))]
+    cushion = lib.material("ST_Cushion", (0.55, 0.12, 0.1), 0.9, albedo="fabric_a")
+    lib_mats = [M['wdark'], paper] + covers          # 0 wood, 1 paper, 2..5 covers
+    C = [2, 3, 4, 5]
+
+    # --- west wall: tall bookshelves (books standing, spines facing the room)
     bm = bmesh.new()
-    lib.box_mm(bm, -40, 40, -40, -4, -1.5, G)
-    q = lib.mesh_obj("quay", bm, [M['paving']])
-    lib.finalize(q, 35)
-    lib.uv_box(q, 3.5)
-    statics.append(q)
+    y0, y1, x0 = -5.6, 4.1, -X
+    lib.box_mm(bm, x0, x0 + 0.62, y0, y1, 0, 0.12, mi=0)
+    for k in range(5):
+        z = 0.12 + k * 0.78
+        lib.box_mm(bm, x0, x0 + 0.62, y0, y1, z, z + 0.05, mi=0)
+    for yy in np.linspace(y0, y1, 6):
+        lib.box_mm(bm, x0, x0 + 0.62, yy - 0.04, yy + 0.04, 0, 3.4, mi=0)
+    lib.box_mm(bm, x0, x0 + 0.66, y0 - 0.05, y1 + 0.05, 3.4, 3.52, mi=0)
+    bays = np.linspace(y0, y1, 6)
+    for k in range(4):
+        z = 0.17 + k * 0.78
+        for b0, b1 in zip(bays[:-1], bays[1:]):
+            props.book_row(bm, lib.T(x0 + 0.33, b0 + 0.06, z) @ lib.Rz(math.pi / 2), (b1 - b0) - 0.12, rnd, C, 1,
+                           h=(0.4, 0.62), depth=0.36)
+    multi("bookshelves", bm, lib_mats, statics, uv=0.6)
+    lib.col_box(x0, x0 + 0.75, y0, y1, 3.6)
+    lib.empty("Item_books", (-7.4, 0.2, 0), size=0.4)
+
+    # --- east wall: manuscript cabinet (cubbies with rolled manuscripts)
     bm = bmesh.new()
-    lib.box_mm(bm, -40, 40, -4.6, -3.8, -1.6, G + 0.1)
-    multi("quay_edge", bm, [M['stone']], statics, uv=2.5)
-    # wooden jetty on posts
+    cy0, cy1, cx1 = -0.4, 4.6, X
+    cols, rows = 6, 4
+    for i in range(cols + 1):
+        yy = cy0 + (cy1 - cy0) * i / cols
+        lib.box_mm(bm, cx1 - 0.6, cx1, yy - 0.04, yy + 0.04, 0, 3.0, mi=0)
+    for j in range(rows + 1):
+        z = j * 3.0 / rows
+        lib.box_mm(bm, cx1 - 0.6, cx1, cy0, cy1, z, z + 0.05, mi=0)
+    for i in range(cols):
+        for j in range(rows):
+            yc = cy0 + (cy1 - cy0) * (i + 0.5) / cols
+            zc = j * 3.0 / rows + 0.11
+            for k in range(rnd.randint(3, 5)):
+                yy = yc + (k % 3 - 1) * 0.13
+                zz = zc + (k // 3) * 0.11
+                props.scroll(bm, lib.T(cx1 - 0.3, yy, zz), 0.46, 0.055, 1, 0)
+    multi("manuscripts", bm, [M['wdark'], paper], statics, uv=0.6)
+    lib.col_box(cx1 - 0.7, cx1, cy0, cy1, 3.2)
+    lib.empty("Item_manuscripts", (7.5, 2.1, 0), size=0.4)
+
+    # --- north: the judge's majlis (carpet, cushions, low desk) + name plaque
     bm = bmesh.new()
-    for i in range(30):
-        y = -3.8 + i * 0.75
-        lib.box_mm(bm, -1.8, 1.8, y, y + 0.68, G - 0.12, G)
-    for y in np.arange(-3, 18.5, 3):
-        for sx in (-1.6, 1.6):
-            lib.cyl(bm, sx, y, -2.0, 2.55, 0.14, 0.13, segs=8)
-    jt = multi("jetty", bm, [M['wood']], statics, uv=1.2)
+    lib.box_mm(bm, -3.8, 3.8, 3.4, 6.95, 0.0, 0.025)
+    cp = lib.mesh_obj("majlis_carpet", bm, [M['carpet']])
+    lib.uv_fit(cp, 0, 1)
+    statics.append(cp)
     bm = bmesh.new()
-    for y in np.arange(-3, 18.5, 3):
-        for sx in (-1.7, 1.7):
-            lib.cyl(bm, sx, y, G, 0.9, 0.06, 0.06, segs=6)
-    for sx in (-1.7, 1.7):
-        lib.cyl_axis(bm, (sx, -3, G + 0.85), (sx, 18, G + 0.85), 0.05, segs=6)
-    multi("jetty_rail", bm, [M['wdark']], statics)
-    # big dhow moored along the jetty (bow north)
+    for x in np.linspace(-3.1, 3.1, 6):
+        lib.box(bm, (x, 6.55, 0.45), (1.0, 0.3, 0.6))       # back cushions (masnad)
+        lib.box(bm, (x, 6.05, 0.1), (1.05, 0.75, 0.2))      # seat cushions
+    for sx in (-1, 1):
+        for y in (4.2, 5.2):
+            lib.box(bm, (sx * 3.45, y, 0.1), (0.75, 1.0, 0.2))
+            lib.box(bm, (sx * 3.75, y, 0.45), (0.3, 1.0, 0.6))
+    multi("cushions", bm, [cushion], statics, uv=0.7)
+    lib.col_box(-3.9, 3.9, 5.6, 6.95, 0.8)
+    lib.col_box(3.05, 3.95, 3.6, 5.8, 0.8)
+    lib.col_box(-3.95, -3.05, 3.6, 5.8, 0.8)
     bm = bmesh.new()
-    props.dhow(bm, lib.T(5.5, 8.0, -0.18) @ lib.Rz(math.pi / 2), 16.0,
-               {'hull': 0, 'deck': 1, 'sail': 2, 'rope': 3, 'trim': 4, 'wood': 5})
-    ship = multi("dhow", bm, [M['wood'], M['paving'], M['sail'], M['rope'], M['brass'], M['wdark']], statics, uv=1.5)
-    # gangplank
-    bm = bmesh.new()
-    lib.box_mm(bm, 1.7, 3.9, 7.4, 8.6, G - 0.06, G)
-    multi("gangplank", bm, [M['wdark']], statics)
-    # navigation shelter on the quay with three instrument stands
-    bm = bmesh.new()
+    lib.box_mm(bm, -1.2, 1.2, 4.3, 4.95, 0.38, 0.45, mi=0)
     for sx in (-1, 1):
         for sy in (-1, 1):
-            lib.cyl(bm, 6 + sx * 3.2, -11 + sy * 1.8, G, 2.9, 0.13, 0.11, segs=10)
-    multi("shelter_posts", bm, [M['bark']], statics)
+            lib.box_mm(bm, sx * 1.1 - 0.05, sx * 1.1 + 0.05, 4.62 + sy * 0.25 - 0.05, 4.62 + sy * 0.25 + 0.05, 0, 0.38,
+                       mi=0)
+    props.open_book(bm, lib.T(-0.35, 4.62, 0.45), 0.44, 0.3, 2, 1)
+    lib.cyl(bm, 0.55, 4.55, 0.45, 0.08, 0.05, 0.04, segs=10, mi=3)                     # inkwell
+    lib.cyl_axis(bm, (0.55, 4.55, 0.52), (0.75, 4.75, 0.78), 0.008, 0.002, segs=5, mi=1)  # quill
+    for k in range(3):
+        lib.box(bm, (0, 0, 0), (0.3, 0.22, 0.004), mi=1,
+                M=lib.T(0.75 + k * 0.02, 4.68, 0.456 + k * 0.004) @ lib.Rz(rad(rnd.uniform(-12, 12))))
+    multi("judge_desk", bm, [M['wdark'], paper, covers[0], M['iron']], statics, uv=0.6)
+    lib.col_box(-1.3, 1.3, 4.2, 5.05, 0.6)
     bm = bmesh.new()
-    lib.box_mm(bm, 2.4, 9.6, -13.2, -8.8, G + 2.9, G + 3.1)
-    multi("shelter_roof", bm, [M['weave']], statics, uv=1.4)
-    stands = {'kamal': (3.5, -11.0), 'compass': (6.0, -11.0), 'astrolabe': (8.5, -11.0)}
+    lib.box_mm(bm, -1.6, 1.6, -0.05, 0.05, -0.62, 0.62)
+    b = lib.mesh_obj("Board_name", bm, [M['board']])
+    b.matrix_world = lib.T(0, Y - 0.08, 3.55)
     bm = bmesh.new()
-    for key, (x, y) in stands.items():
-        lib.lathe(bm, [(0.0, G), (0.35, G), (0.3, G + 0.1), (0.2, G + 0.2), (0.17, G + 0.9), (0.3, G + 1.0), (0.0, G + 1.0)],
-                  segs=8, M=lib.T(x, y, 0))
-        lib.col_circle(x, y, 0.38, 1.1)
-        lib.empty(f"Item_{key}", (x, y - 1.1, G), size=0.4)
-    multi("stands", bm, [M['white']], statics, uv=1.0)
+    lib.box_mm(bm, -1.72, 1.72, Y - 0.06, Y - 0.02, 2.82, 4.28)
+    multi("name_frame", bm, [M['brass']], statics)
+    lib.empty("Item_judge", (0.0, 2.7, 0), size=0.4)
+
+    # --- north-west niche: seeking knowledge in Nizwa (reading stand + lantern)
     bm = bmesh.new()
-    # kamal: small board + knotted cord
-    x, y = stands['kamal']
-    lib.box(bm, (x, y, G + 1.12), (0.22, 0.02, 0.14), mi=0)
-    for k in range(9):
-        lib.sphere(bm, (x + 0.02 * math.sin(k), y + 0.03 + k * 0.035, G + 1.04 - k * 0.005), 0.012, 6, 4, mi=1)
-    lib.cyl_axis(bm, (x, y, G + 1.08), (x, y + 0.34, G + 1.01), 0.005, segs=4, mi=1)
-    # compass box (بيت الإبرة)
-    x, y = stands['compass']
-    lib.box(bm, (x, y, G + 1.08), (0.32, 0.32, 0.12), mi=0)
-    lib.cyl(bm, x, y, G + 1.14, 0.01, 0.12, 0.12, segs=24, mi=2)
-    lib.box(bm, (0, 0, 0), (0.2, 0.025, 0.01), mi=3, M=lib.T(x, y, G + 1.16) @ lib.Rz(rad(20)))
-    multi("instruments", bm, [M['wood'], M['rope'], M['board'], M['iron']], statics, uv=0.5)
+    lib.box_mm(bm, -8.2, -5.8, 4.9, 6.6, 0.0, 0.02, mi=2)
+    props.lectern(bm, lib.T(-7.0, 5.7, 0.02), 0, 1, 3)
+    multi("nizwa_corner", bm, [M['wdark'], covers[1], M['carpet'], paper], statics, uv=0.6)
+    lib.col_box(-7.5, -6.5, 5.3, 6.2, 0.8)
+    lib.empty("Item_nizwa", (-6.6, 3.5, 0), size=0.4)
+
+    # --- centre: low reading table with books and manuscripts
     bm = bmesh.new()
-    x, y = stands['astrolabe']
-    props.astrolabe(bm, lib.T(x, y, G + 1.45) @ lib.Rz(rad(10)), 0.3, 0)
-    multi("astrolabe", bm, [M['brass']], statics)
-    # harbour props
-    rnd = random.Random(3)
+    lib.box_mm(bm, -1.6, 1.6, -0.9, 0.9, 0.46, 0.56, mi=0)
+    for sx in (-1, 1):
+        for sy in (-1, 1):
+            lib.box_mm(bm, sx * 1.45 - 0.06, sx * 1.45 + 0.06, sy * 0.75 - 0.06, sy * 0.75 + 0.06, 0, 0.46, mi=0)
+    props.open_book(bm, lib.T(-0.3, 0.0, 0.56) @ lib.Rz(rad(8)), 0.62, 0.42, 2, 1)
+    for k in range(3):
+        props.scroll(bm, lib.T(0.9, -0.35 + k * 0.16, 0.6), 0.5, 0.055, 1, 0)
+    for k in range(4):
+        lib.box(bm, (-1.15, 0.45, 0.6 + k * 0.05), (0.32, 0.24, 0.045), mi=3 + k % 3)
+    multi("reading_table", bm, [M['wdark'], paper] + covers, statics, uv=0.6)
+    lib.col_box(-1.7, 1.7, -1.0, 1.0, 0.75)
+
+    # --- south-east: «النشأة» corner — a chest and a painted board
     bm = bmesh.new()
-    for (x, y) in ((-6.5, -8.0), (-7.2, -7.3), (-6.0, -6.8), (12.5, -7.5), (13.2, -8.4)):
-        props.barrel(bm, lib.T(x, y, G), 1.0, 0, 1)
-        lib.col_circle(x, y, 0.35, 0.9)
-    for (x, y) in ((-9, -9.5), (14.5, -10.5)):
-        lib.box(bm, (x, y, G + 0.4), (1.2, 0.8, 0.8), mi=2)
-        lib.col_box(x - 0.6, x + 0.6, y - 0.4, y + 0.4, 0.85)
-    props.rope_coil(bm, lib.T(-2.8, -6.2, G), 1.3, 3)
-    props.anchor(bm, lib.T(-3.6, -8.6, G) @ lib.Rz(rad(30)) @ lib.Ry(rad(14)), 1.1, 1)
-    lib.col_circle(-3.6, -8.6, 0.6, 1.5)
-    multi("harbour_props", bm, [M['wood'], M['iron'], M['wdark'], M['rope']], statics, uv=1.0)
-    # bio plaque near the arrival
+    props.chest(bm, lib.T(8.6, -6.2, 0), 1.1, 0.6, 0.6, 0, 1)
+    multi("origin_chest", bm, [M['wdark'], M['brass']], statics, uv=0.8)
+    lib.col_box(8.0, 9.2, -6.6, -5.8, 0.8)
     bm = bmesh.new()
-    lib.box_mm(bm, -1.6, 1.6, -0.06, 0.06, -1.0, 1.0)
-    bio = lib.mesh_obj("Board_bio", bm, [M['board']])
-    bio.matrix_world = lib.T(-6.5, -14.0, G + 1.6) @ lib.Rz(rad(-20))
+    lib.box_mm(bm, -0.9, 0.9, -0.05, 0.05, -0.6, 0.6)
+    b = lib.mesh_obj("Board_origin", bm, [M['board']])
+    b.matrix_world = lib.T(X - 0.08, -4.9, 2.3) @ lib.Rz(-math.pi / 2)
+    lib.empty("Item_origin", (8.0, -4.4, 0), size=0.4)
+
+    # --- south-west: chest with books
     bm = bmesh.new()
-    for sx in (-1.5, 1.5):
-        lib.cyl(bm, sx, 0, -1.6, 2.7, 0.08, 0.08, segs=8, M=lib.T(-6.5, -14.0, G) @ lib.Rz(rad(-20)))
-    multi("bio_posts", bm, [M['wdark']], statics)
-    lib.col_circle(-6.5, -14.0, 1.6, 3)
-    lib.empty("Item_bio", (-6.0, -15.6, G), size=0.4)
-    lib.empty("Item_ship", (0.0, 6.0, G), size=0.4)
-    lib.empty("StarSpot", (0.0, 16.5, G), size=0.6)
-    # small harbour house
-    bm = bmesh.new()
-    lib.box_mm(bm, -16, -9, -22, -16, G, G + 4.0)
-    hs = lib.mesh_obj("house", bm, [M['white']])
-    lib.bevel(hs, 0.05, 2)
-    lib.boolean(hs, [lib.cutter("c", lambda b: lib.prism(b, lib.arch_pts(1.4, 2.0, 'pointed', 0.3, 12, G - 0.2), 2,
-                                                              M=lib.T(-12.5, -16, 0)))])
-    lib.finalize(hs, 35)
-    lib.uv_box(hs, 3)
-    statics.append(hs)
-    bm = bmesh.new()
-    lib.crenels_rect(bm, -15.8, -9.2, -21.8, -16.2, G + 4.0, 1.0, w=0.55, d=0.35, h=0.45, tip=0.36)
-    multi("house_top", bm, [M['white']], statics)
-    lib.col_box(-16, -9, -22, -16, 5)
-    lamps_row(M, statics, [(-2.6, -5.0), (2.6, -5.0), (-2.4, 17.6), (2.4, 17.6), (-12, -6), (12, -6), (-5, -20), (5, -20)],
-              h=2.8)
-    exit_portal(M, statics, 0, -27.0, 0.0)
-    # blockers: the sea around the jetty and ship
-    lib.col_box(-40, -1.85, -4, 60, 6)
-    lib.col_box(1.85, 3.5, -4, 7.35, 6)
-    lib.col_box(1.85, 3.5, 8.65, 60, 6)
-    lib.col_box(7.6, 40, -4, 60, 6)
-    lib.col_box(3.5, 7.6, -4, 1.0, 6)
-    lib.col_box(3.5, 7.6, 15.2, 60, 6)
-    lib.col_box(-1.85, 1.85, 18.3, 60, 6)
-    # ship deck walls (rails) + mast
-    for yy in np.arange(1.2, 15.0, 0.9):
-        lib.col_circle(3.25, yy, 0.25, 6) if not (7.3 < yy < 8.7) else None
-        lib.col_circle(7.75, yy, 0.25, 6)
-    lib.col_circle(5.5, 9.3, 0.4, 9)
-    lib.col_circle(5.5, 3.2, 0.3, 9)
-    lib.col_box(3.85, 7.15, 0.16, 3.36, G + 0.42)
-    # sea + far hills
-    bm = bmesh.new()
-    lib.box_mm(bm, -600, 600, -4.2, 600, -0.32, -0.3)
-    sea = lib.mesh_obj("Water_Sea", bm, [M['water']])
-    lib.uv_box(sea, 6.0)
-    scenery.terrain("Terrain", (M['sand'], M['rock']), seed=21, dune_h=3, size=900, res=150, flat_r=(45, 90),
-                    corridor=(0, 1), flat_boxes=[(-45, 45, -45, 5, 20)], mtn_r=(150, 300), mtn_h=(30, 90),
-                    mtn_bias=lambda a: np.clip(-np.sin(a) * 1.2, 0.0, 1.0), sea_y=-6)
-    pts = [(rnd.uniform(-35, 35), rnd.uniform(-38, -18)) for _ in range(26)]
-    pts = [p for p in pts if abs(p[0]) > 4 and not (-17 < p[0] < -8 and -23 < p[1] < -15)]
-    scenery.scatter_palms(pts, seed=5)
-    for o in bpy.data.objects:
-        if o.name.startswith("Palm."):
-            o.location.z = G
-    finish("nav", statics, dict(x0=-38, x1=38, z0=-60, z1=38), dict(x=0, z=16.0, yaw=3.14159), ground=G)
+    props.chest(bm, lib.T(-8.6, -6.3, 0), 1.0, 0.55, 0.55, 0, 1)
+    for k in range(3):
+        lib.box(bm, (-8.6, -6.3, 0.6 + k * 0.05), (0.34, 0.25, 0.045), mi=2 + k)
+    multi("sw_chest", bm, [M['wdark'], M['brass']] + covers, statics, uv=0.8)
+    lib.col_box(-9.2, -8.0, -6.7, -5.9, 0.8)
+
+    # manuscripts to collect (the web app draws the glowing scrolls)
+    for i, (x, y) in enumerate(((-3.8, -2.6), (4.7, 4.3), (-7.4, -4.9), (4.4, -3.7))):
+        lib.empty(f"Scroll_{i + 1}", (x, y, 0), size=0.3)
+
+    hanging_lanterns(M, statics, [(-4.5, -2.0), (4.5, -2.0), (0, -0.2)], z=3.7, H=H)
+    door_exit(M, Y)
+    finish("nav", statics, dict(x0=-X, x1=X, z0=-Y, z1=Y), dict(x=0, z=5.0, yaw=3.14159), ground=0.0)
 
 
 # ============================================================ 2. sumhuram
@@ -521,16 +522,34 @@ def build_sumhuram():
         ob = lib.mesh_obj(f"Art_{i + 1}", bm, [art_m[i]], loc=(x, y, -0.6))
         lib.finalize(ob, 40)
         lib.uv_box(ob, 0.5)
-    # info points
+    # storage jars by the store rooms («مخازن اللبان»)
+    for (x, y, s_) in ((8.1, -2.3, 1.0), (8.7, -1.6, 0.85), (7.7, -3.1, 0.9), (9.0, -2.8, 1.05)):
+        props.amphora(bma, lib.T(x, y, 0), s_, 0)
+        lib.col_circle(x, y, 0.25, 1)
+    # the ancient cemetery south of the walls: low stone cairns and upright stones
+    bmc = kit.bm('stone')
+    for k in range(16):
+        x, y = -12.0 + (k % 6) * 1.25 + rnd.uniform(-0.2, 0.2), -11.4 - (k // 6) * 1.1 + rnd.uniform(-0.2, 0.2)
+        lib.ico(bmc, (x, y, 0.05), rnd.uniform(0.35, 0.5), 1, scale=(1.3, 0.9, 0.45))
+        if k % 2 == 0:
+            lib.box(bmc, (x, y + 0.35, 0.35), (0.28, 0.12, 0.6), M=lib.Rz(0))
+        lib.col_circle(x, y, 0.45, 0.6)
+    # information points (the encyclopedia sections)
     lib.empty("Item_gate", (0.0, Y1 + 7.0, 0), size=0.5)
-    lib.empty("Item_tree", (-16.0, 1.5, 0), size=0.5)
-    lib.empty("Item_port", (15.5, 2.0, 0), size=0.5)
-    lib.empty("Item_unesco", (6.0, 22.0, 0), size=0.5)
+    lib.empty("Item_store", (7.0, -1.4, 0), size=0.5)
+    lib.empty("Item_secrets", (-4.6, -3.4, 0), size=0.5)
+    lib.empty("Item_fort", (6.6, 9.0, 0), size=0.5)
+    lib.empty("Item_tomb", (-3.9, -12.6, 0), size=0.5)
+    # name plaque facing the arrival point
     bm = bmesh.new()
-    lib.box_mm(bm, -1.2, 1.2, -0.05, 0.05, -0.75, 0.75)
-    b = lib.mesh_obj("Board_unesco", bm, [M['board']])
-    b.matrix_world = lib.T(6.0, 23.6, 1.5) @ lib.Rz(math.pi)
-    lib.col_circle(6.0, 23.6, 1.2, 3)
+    lib.box_mm(bm, -1.3, 1.3, -0.05, 0.05, -0.7, 0.7)
+    b = lib.mesh_obj("Board_name", bm, [M['board']])
+    b.matrix_world = lib.T(4.0, 18.8, 1.6) @ lib.Rz(math.pi)
+    bm = bmesh.new()
+    for sx in (-1.15, 1.15):
+        lib.cyl(bm, sx, 0, -1.6, 2.6, 0.08, 0.08, segs=6, M=lib.T(4.0, 18.8, 1.6) @ lib.Rz(math.pi))
+    multi("name_posts", bm, [M['wdark']], statics)
+    lib.col_circle(4.0, 18.8, 1.3, 3)
     kit.emit("ruins", statics, uv_tile=2.2)
     # ground plateau + lagoon (khor) to the east and the sea to the south
     bm = bmesh.new()
@@ -773,7 +792,7 @@ def build_ivory():
     bm = bmesh.new()
     lib.box_mm(bm, -1.1, 1.1, -0.04, 0.04, -0.7, 0.7)
     b = lib.mesh_obj("Board_protect", bm, [M['board']])
-    b.matrix_world = lib.T(X - 0.06, 5.0, 2.4) @ lib.Rz(math.pi / 2)
+    b.matrix_world = lib.T(X - 0.06, 5.0, 2.4) @ lib.Rz(-math.pi / 2)  # painted side (local -Y) faces the room
     lib.empty("Item_protect", (X - 1.6, 5.0, 0), size=0.4)
     # model dhow on a stand + zanzibar painting
     bm = bmesh.new()
@@ -881,7 +900,7 @@ BUILDERS = {'nav': build_nav, 'sumhuram': build_sumhuram, 'turtles': build_turtl
             'clothing': build_clothing}
 
 PREVIEW = {
-    'nav': ((14, -26, 9), (2, 2, 1.5)),
+    'nav': ((6.5, -6.2, 3.6), (-1.5, 3, 1.4)),
     'sumhuram': ((10, 34, 10), (-2, 2, 0)),
     'turtles': ((10, -24, 6), (0, 0, 0)),
     'ivory': ((7, -6, 3.5), (-2, 2, 1.2)),
@@ -895,15 +914,18 @@ if __name__ == "__main__":
         print("=" * 10, sid)
         BUILDERS[sid]()
         lib.setup_world()
-        lib.add_sun((-0.4, -0.7, 0.55), 4.0 if sid not in ('ivory', 'clothing') else 1.0)
-        if sid in ('ivory', 'clothing'):
+        lib.add_sun((-0.4, -0.7, 0.55), 4.0 if sid not in ('nav', 'ivory', 'clothing') else 1.0)
+        if sid in ('nav', 'ivory', 'clothing'):
             pl = bpy.data.lights.new("Fill", 'POINT')
             pl.energy = 2500
             o = bpy.data.objects.new("Fill", pl)
             bpy.context.scene.collection.objects.link(o)
             o.location = (0, 0, 4.5)
         pos, tgt = PREVIEW[sid]
-        lib.add_camera(pos, tgt, 22 if sid in ('ivory', 'clothing') else 28)
+        lib.add_camera(pos, tgt, 22 if sid in ('nav', 'ivory', 'clothing') else 28)
         lib.setup_render((1280, 720), 24)
         lib.pack_and_save("station_" + sid)
-        lib.render_still(os.path.join(lib.RENDER_DIR, f"station_{sid}.jpg"))
+        try:  # preview only — never block the export of the next station
+            lib.render_still(os.path.join(lib.RENDER_DIR, f"station_{sid}.jpg"))
+        except RuntimeError as e:
+            print("preview render skipped:", e)

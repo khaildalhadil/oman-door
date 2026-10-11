@@ -29,13 +29,13 @@ import {
 import { player, Player } from './Player'
 
 type PavId = StationId | 'bonus'
-const PIN_ICON: Record<StationId, string> = { nav: '⛵', sumhuram: '🏛', turtles: '🐢', ivory: '🐘', clothing: '👘' }
+const PIN_ICON: Record<StationId, string> = { nav: '📜', sumhuram: '🏛', turtles: '🐢', ivory: '🐘', clothing: '👘' }
 const PAVS: PavId[] = [...STATION_ORDER, 'bonus']
 
 /* ----------------------------------------------------------- sign boards */
 
 const ICON_PATHS: Record<StationId, string[]> = {
-  nav: ['M10 62 Q50 82 92 58 L86 70 Q50 88 16 72 Z', 'M28 22 L82 8 L58 58 Z', 'M54 64 L56 64 L62 12 L60 12 Z'],
+  nav: ['M6 40 Q27 31 48 40 L48 90 Q27 81 6 90 Z', 'M52 40 Q73 31 94 40 L94 90 Q73 81 52 90 Z', 'M80 4 Q97 9 86 28 L66 52 L61 48 Z'],
   sumhuram: ['M10 24 L50 6 L90 24 Z', 'M10 24 H90 V33 H10 Z', 'M18 36 H30 V78 H18 Z', 'M44 36 H56 V78 H44 Z', 'M70 36 H82 V78 H70 Z', 'M6 84 H94 V92 H6 Z'],
   turtles: ['M26 54 A24 28 0 1 0 74 54 A24 28 0 1 0 26 54 Z', 'M41 18 A9 9 0 1 0 59 18 A9 9 0 1 0 41 18 Z', 'M8 34 Q22 26 34 44 Q20 46 8 34 Z', 'M92 34 Q78 26 66 44 Q80 46 92 34 Z', 'M22 86 Q28 74 38 76 Q32 88 22 86 Z', 'M78 86 Q72 74 62 76 Q68 88 78 86 Z'],
   ivory: ['M26 50 A30 20 0 1 0 86 50 A30 20 0 1 0 26 50 Z', 'M11 44 A15 15 0 1 0 41 44 A15 15 0 1 0 11 44 Z', 'M10 50 Q2 66 10 82 L16 80 Q10 66 18 52 Z', 'M36 60 H45 V84 H36 Z', 'M46 60 H55 V84 H46 Z', 'M64 60 H73 V84 H64 Z', 'M74 60 H83 V84 H74 Z'],
@@ -192,7 +192,7 @@ export function PlazaScene() {
       const tex =
         id === 'bonus'
           ? signTexture('قلعة نزوى', 'رحلة إضافية', '#7a1f1f', null, false, 3.0, 0.84)
-          : signTexture(STATIONS[id].title, STATIONS[id].subtitle, STATIONS[id].color, ICON_PATHS[id], !!stamps[id])
+          : signTexture(STATIONS[id].short, STATIONS[id].subtitle, STATIONS[id].color, ICON_PATHS[id], !!stamps[id])
       return { id, n, tex, w: id === 'bonus' ? 3.0 : 3.6, h: id === 'bonus' ? 0.84 : 1.1 }
     }).filter(Boolean) as { id: PavId; n: THREE.Mesh; tex: THREE.Texture; w: number; h: number }[]
   }, [fonts, nodes, stamps])
@@ -251,7 +251,7 @@ export function PlazaScene() {
     const st = useStore.getState()
     // objective: the next station without a stamp
     const next = STATION_ORDER.find((id) => !st.stamps[id])
-    if (next && pavs[next]) setNav(pavs[next].pos.clone().addScaledVector(pavs[next].fwd, 2), STATIONS[next].title)
+    if (next && pavs[next]) setNav(pavs[next].pos.clone().addScaledVector(pavs[next].fwd, 2), STATIONS[next].short)
     else setNav(null)
     if (st.busy || entering.current) return
     // walking into a doorway
@@ -311,7 +311,7 @@ export function PlazaScene() {
               <span className="map-pin__dot">
                 <i>{stamps[id] ? '✓' : PIN_ICON[id]}</i>
               </span>
-              <span className="map-pin__label">{STATIONS[id].title}</span>
+              <span className="map-pin__label">{STATIONS[id].short}</span>
             </button>
           </Html>
         )

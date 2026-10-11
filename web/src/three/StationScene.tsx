@@ -27,7 +27,7 @@ import { activityNav, StationActivity } from './Activities'
 import { portalMaterial } from './PlazaScene'
 import { player, Player } from './Player'
 
-const INDOOR: StationId[] = ['ivory', 'clothing']
+const INDOOR: StationId[] = ['nav', 'ivory', 'clothing']
 
 /* ----------------------------------------------------------- environments */
 
@@ -77,16 +77,6 @@ function SkyLight({ color, intensity, dir, size = 45, bias = -0.0004 }: { color:
 }
 
 function StationEnv({ id }: { id: StationId }) {
-  if (id === 'nav')
-    return (
-      <>
-        <GradientSky top="#16234a" mid="#e9925a" bottom="#2a2232" />
-        <Stars radius={320} depth={40} count={2200} factor={5} saturation={0} fade speed={0.4} />
-        <fog attach="fog" args={['#5a4458', 80, 520]} />
-        <hemisphereLight args={['#8e9fd6', '#4d3527', 0.75]} />
-        <SkyLight color="#ffa060" intensity={1.8} dir={[-0.85, 0.16, 0.5]} />
-      </>
-    )
   if (id === 'turtles')
     return (
       <>
@@ -212,7 +202,7 @@ export function StationScene({ id }: { id: StationId }) {
       .filter((n) => n.name.startsWith('Board_') && (n as THREE.Mesh).isMesh)
       .map((n) => {
         const key = n.name.replace('Board_', '')
-        const it = def.items.find((x) => x.key === key)
+        const it = key === 'name' ? { title: def.title, text: def.subtitle } : def.items.find((x) => x.key === key)
         if (!it) return null
         const mesh = n as THREE.Mesh
         mesh.geometry.computeBoundingBox()
@@ -261,22 +251,25 @@ export function StationScene({ id }: { id: StationId }) {
       const gy = groundAt(world, spawn.x, spawn.z, 50)
       await introToPlayer(ref.current, from, spawn, gy, indoor ? 3.0 : 7, indoor ? 1.45 : 2.6, indoor ? 1.0 : 1.6)
       if (!alive) return
-      useStore.getState().setBusy(false)
-      useStore.getState().playAnim('wave')
-      useStore.getState().showToast(def.intro)
+      const st = useStore.getState()
+      st.setBusy(false)
+      st.playAnim('wave')
+      if (def.riddle && !st.progress[id].riddle && !st.stamps[id]) st.setRiddleOpen(id)
+      else st.showToast(def.intro)
     })()
     return () => {
       alive = false
       setNav(null)
     }
-  }, [spawn, indoor, world, def])
+  }, [spawn, indoor, world, def, id])
 
   useFrame(() => {
     const st = useStore.getState()
     const pr = st.progress[id]
     // objective marker
     const unseen = items.find((it) => !pr.seen.includes(it.key))
-    if (unseen) setNav(unseen.pos, unseen.title)
+    if (def.riddle && !pr.riddle && !st.stamps[id]) setNav(null)
+    else if (unseen) setNav(unseen.pos, unseen.title)
     else if (!pr.activity && activityNav.target) setNav(activityNav.target, activityNav.label)
     else if (!pr.quizDone) setNav(null)
     else setNav(exit, 'العودة إلى الساحة')

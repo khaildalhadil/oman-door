@@ -327,6 +327,41 @@ def astrolabe(bm, M, r=0.4, mi=0):
     lib.torus(bm, R @ lib.T(0, r * 1.12, 0) @ lib.Rx(math.pi / 2), 0.12 * r, 0.03 * r, 16, 5, mi=mi)
 
 
+def book_row(bm, M, length, rnd, mi_covers, mi_pages, h=(0.22, 0.32), depth=0.22):
+    """A row of standing books along local +X, spines facing local -Y."""
+    x = 0.0
+    while x < length - 0.04:
+        t = rnd.uniform(0.035, 0.075)
+        hh = rnd.uniform(*h)
+        mi = rnd.choice(mi_covers)
+        lib.box(bm, (x + t / 2, 0, hh / 2), (t, depth, hh), mi=mi, M=M)
+        lib.box(bm, (x + t / 2, 0.012, hh / 2), (t * 0.8, depth, hh * 0.92), mi=mi_pages, M=M)
+        x += t + 0.004
+
+
+def scroll(bm, M, length=0.5, r=0.05, mi_paper=0, mi_wood=0):
+    """A rolled manuscript along local X."""
+    lib.cyl_axis(bm, M @ Vector((-length / 2, 0, 0)), M @ Vector((length / 2, 0, 0)), r, segs=12, mi=mi_paper)
+    for sx in (-1, 1):
+        lib.cyl_axis(bm, M @ Vector((sx * length / 2, 0, 0)), M @ Vector((sx * (length / 2 + 0.04), 0, 0)), r * 0.45,
+                     segs=8, mi=mi_wood)
+
+
+def open_book(bm, M, w=0.42, d=0.3, mi_cover=0, mi_pages=0, angle=0.22):
+    """Open book lying on a surface (spine along local Y)."""
+    for sx in (-1, 1):
+        R = M @ lib.Ry(-sx * angle)
+        lib.box(bm, (sx * w / 4, 0, 0.008), (w / 2, d, 0.016), mi=mi_cover, M=R)
+        lib.box(bm, (sx * w / 4 * 0.97, 0, 0.026), (w / 2 * 0.94, d * 0.94, 0.022), mi=mi_pages, M=R)
+
+
+def lectern(bm, M, mi_wood=0, mi_cover=0, mi_pages=0):
+    """Folding Qur'an-style reading stand (رحل) with an open book, facing local -Y."""
+    for sx in (-1, 1):
+        lib.box(bm, (0, sx * 0.08, 0.22), (0.42, 0.03, 0.5), mi=mi_wood, M=M @ lib.Rx(sx * 0.62))
+    open_book(bm, M @ lib.T(0, -0.04, 0.42) @ lib.Rx(-0.55), 0.46, 0.32, mi_cover, mi_pages, angle=0.18)
+
+
 def anchor(bm, M, s=1.0, mi=0):
     lib.cyl_axis(bm, M @ Vector((0, 0, 0.1 * s)), M @ Vector((0, 0, 1.4 * s)), 0.05 * s, segs=8, mi=mi)
     lib.cyl_axis(bm, M @ Vector((-0.35 * s, 0, 1.25 * s)), M @ Vector((0.35 * s, 0, 1.25 * s)), 0.04 * s, segs=8, mi=mi)
