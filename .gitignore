@@ -16,3 +16,6 @@ docs/*.mp4
 # build logs
 *.log
 __pycache__/
+
+# screenshots for sharing (not part of the build)
+docs/لقطات/
