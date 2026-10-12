@@ -25,6 +25,7 @@ import {
 } from './helpers'
 import { activityNav, StationActivity } from './Activities'
 import { portalMaterial } from './PlazaScene'
+import { narrate } from '../ui/Narration'
 import { player, Player } from './Player'
 
 const INDOOR: StationId[] = ['nav', 'ivory', 'clothing']
@@ -255,7 +256,10 @@ export function StationScene({ id }: { id: StationId }) {
       st.setBusy(false)
       st.playAnim('wave')
       if (def.riddle && !st.progress[id].riddle && !st.stamps[id]) st.setRiddleOpen(id)
-      else st.showToast(def.intro)
+      else {
+        st.showToast(def.intro)
+        if (def.introAudio && !st.stamps[id]) narrate(def.introAudio)
+      }
     })()
     return () => {
       alive = false

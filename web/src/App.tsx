@@ -56,6 +56,17 @@ function Experience() {
   )
 }
 
+/** this device shows a design applied from «استوديو التحديات» */
+function StudioBanner() {
+  const live = useStore((s) => s.liveContent)
+  if (!live.length) return null
+  return (
+    <a className="studio-banner" href="./studio.html" title="العودة إلى استوديو التحديات">
+      ✏️ تصميم من استوديو التحديات
+    </a>
+  )
+}
+
 export default function App() {
   const quality = useStore((s) => s.quality)
   const scene = useStore((s) => s.scene)
@@ -100,6 +111,7 @@ export default function App() {
       <VideoModal />
       <Fade />
       <Intro />
+      <StudioBanner />
     </div>
   )
 }

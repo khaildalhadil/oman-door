@@ -62,6 +62,9 @@ export function TeacherPanel() {
             ✕
           </button>
         </div>
+        <a className="studio-link" href="./studio.html" target="_blank" rel="noopener">
+          ✏️ استوديو التحديات: تصمّم فيه الطالبات لغز المحطة وبطاقاتها وتحدياتها بأصواتهن، بدون برمجة
+        </a>
         {!unlocked ? (
           <form
             className="teacher__lock"

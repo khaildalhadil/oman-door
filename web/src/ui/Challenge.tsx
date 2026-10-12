@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { sfx } from '../game/sfx'
 import { STATIONS, type ChallengeStep, type StationId, type TFQuestion } from '../stations'
 import { useStore } from '../store'
+import { Narration } from './Narration'
 import { StationIcon } from './Passport'
 import { toAr } from './Quiz'
 
@@ -54,6 +55,7 @@ export function StationRiddle() {
         </span>
         {!solved ? (
           <>
+            <Narration src={def.introAudio} label="استمعي للمقدمة" />
             <p className="riddle__text">{r.text}</p>
             <h2 className="quiz__text">{r.question}</h2>
             <div className="quiz__choices quiz__choices--3">
@@ -95,7 +97,7 @@ export function StationRiddle() {
 
 type Done = (firstTry: boolean) => void
 
-function OrderStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'order' }>; onDone: Done }) {
+export function OrderStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'order' }>; onDone: Done }) {
   const pool0 = useMemo(() => shuffled(step.items), [step])
   const [slots, setSlots] = useState<(string | null)[]>(() => step.items.map(() => null))
   const [locked, setLocked] = useState<boolean[]>(() => step.items.map(() => false))
@@ -170,7 +172,7 @@ function OrderStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'ord
   )
 }
 
-function MatchStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'match' }>; onDone: Done }) {
+export function MatchStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'match' }>; onDone: Done }) {
   const rights = useMemo(() => shuffled(step.pairs.map((p) => p[1])), [step])
   const [placed, setPlaced] = useState<(string | null)[]>(() => step.pairs.map(() => null))
   const [active, setActive] = useState(0)
@@ -257,7 +259,7 @@ function MatchStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'mat
   )
 }
 
-function ChoiceStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'choice' }>; onDone: Done }) {
+export function ChoiceStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'choice' }>; onDone: Done }) {
   const [wrong, setWrong] = useState<number[]>([])
   const [ok, setOk] = useState(false)
   const pick = (i: number) => {
@@ -296,7 +298,7 @@ function ChoiceStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'ch
   )
 }
 
-function MultiStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'multi' }>; onDone: Done }) {
+export function MultiStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'multi' }>; onDone: Done }) {
   const [sel, setSel] = useState<number[]>([])
   const [bad, setBad] = useState<number[]>([])
   const [tries, setTries] = useState(0)
@@ -363,7 +365,7 @@ function MultiStep({ step, onDone }: { step: Extract<ChallengeStep, { kind: 'mul
   )
 }
 
-function TFStep({ questions, onDone }: { questions: TFQuestion[]; onDone: Done }) {
+export function TFStep({ questions, onDone }: { questions: TFQuestion[]; onDone: Done }) {
   const [i, setI] = useState(0)
   const [answers, setAnswers] = useState<boolean[]>([])
   const q = questions[i]
@@ -491,6 +493,12 @@ function Reward({ id, onFinish }: { id: StationId; onFinish: () => void }) {
         <p className="ref">
           <b>📚 المرجع:</b> {def.ref}
         </p>
+      )}
+      {def.outro && (
+        <div className="outro">
+          {def.outro.text && <p>{def.outro.text}</p>}
+          <Narration src={def.outro.audio} auto={!!open || !fact} />
+        </div>
       )}
       <button className="btn btn--primary btn--xl" disabled={!!fact && !open} onClick={onFinish}>
         احصلي على الختم 🏅

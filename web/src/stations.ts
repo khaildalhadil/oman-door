@@ -14,6 +14,10 @@ export interface InfoItem {
   icon: string
   /** short extra line shown under the text (e.g. a note that is not from the encyclopedia) */
   note?: string
+  /** encyclopedia reference shown under this card (e.g. «الموسوعة العُمانية، المجلد 3، ص 1129») */
+  ref?: string
+  /** recorded narration (URL or data: URL) played with the card */
+  audio?: string
 }
 
 export interface TFQuestion {
@@ -65,6 +69,10 @@ export interface StationDef {
   ref?: string
   /** content still waiting for the encyclopedia article */
   pending?: string
+  /** narration played when the station opens (with the riddle) */
+  introAudio?: string
+  /** closing words shown (and played) before the stamp */
+  outro?: { text: string; audio?: string }
 }
 
 export const STATION_ORDER: StationId[] = ['nav', 'sumhuram', 'turtles', 'ivory', 'clothing']

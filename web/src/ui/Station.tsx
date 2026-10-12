@@ -5,6 +5,7 @@ import { useStore } from '../store'
 import { PIECES } from '../three/Activities'
 import { CollapseToggle, useCollapsible } from './collapse'
 import { IvoryRoute } from './Challenge'
+import { Narration } from './Narration'
 import { StationIcon } from './Passport'
 import { toAr } from './Quiz'
 
@@ -162,6 +163,8 @@ export function StationInfo() {
       </h3>
       <p className="info__text">{it.text}</p>
       {it.note && <p className="info__note">{it.note}</p>}
+      {it.ref && <p className="info__ref">📚 {it.ref}</p>}
+      <Narration src={it.audio} />
     </aside>
   )
 }

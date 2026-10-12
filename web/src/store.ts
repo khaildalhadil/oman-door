@@ -98,6 +98,8 @@ interface State {
   stationQuiz: StationId | null
   /** «اكتشفي…» riddle window */
   riddleOpen: StationId | null
+  /** stations showing a design applied on this device from «استوديو التحديات» */
+  liveContent: StationId[]
   activity: string | null
   markSeen: (id: StationId, key: string) => void
   setInfo: (v: { station: StationId; key: string } | null) => void
@@ -187,6 +189,7 @@ export const useStore = create<State>((set, get) => ({
   info: null,
   stationQuiz: null,
   riddleOpen: null,
+  liveContent: [],
   activity: null,
   markSeen: (id, key) => {
     const p = get().progress[id]
