@@ -9,6 +9,7 @@ import './styles.css'
 import './game.css'
 import './journey.css'
 import './challenge.css'
+import './seaStation.css'
 
 if (import.meta.env.DEV) {
   ;(window as unknown as { __store: typeof useStore }).__store = useStore

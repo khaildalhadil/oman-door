@@ -1,0 +1,154 @@
+/* محطة «البحر بداية الحكاية» — صحائف بحرية تراثية (أزرق · بيج · ورق قديم) */
+
+.sea-station {
+  position: fixed;
+  inset: 0;
+  overflow-y: auto;
+  background: linear-gradient(180deg, #0c2a44, #123a5c 40%, #d8c9a3);
+  padding: 72px 16px 24px;
+  display: flex;
+  justify-content: center;
+}
+
+.sea-station__overview {
+  width: 100%;
+  max-width: 1100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+}
+
+.sea-station__stage {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 896 / 528;
+  border-radius: 18px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.sea-station__hero {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sea-station__hit {
+  position: absolute;
+  background: transparent;
+  border: 2px solid transparent;
+  border-radius: 10px;
+  padding: 0;
+  transition: background 0.15s, border-color 0.15s;
+}
+
+.sea-station__hit:hover,
+.sea-station__hit:focus-visible {
+  background: rgba(255, 255, 255, 0.14);
+  border-color: rgba(255, 255, 255, 0.65);
+  outline: none;
+}
+
+.sea-station__hit.is-seen {
+  border-color: rgba(58, 209, 126, 0.75);
+}
+
+.sea-station__check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: #3ad17e;
+  color: #0c2a14;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.35);
+}
+
+.sea-station__hint {
+  color: #f4e8d0;
+  text-align: center;
+}
+
+.sea-station__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+/* -------------------------------------------------------------- opened card */
+
+.sea-card {
+  width: 100%;
+  max-width: 960px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.sea-card__back {
+  align-self: flex-start;
+}
+
+.sea-card__stage {
+  width: 100%;
+  aspect-ratio: 1536 / 1024;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+
+.sea-card__img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.sea-card__panel {
+  background: var(--sand);
+  color: var(--ink);
+  border-radius: 16px;
+  padding: 18px 20px;
+  border: 1px solid var(--c, var(--gold));
+  box-shadow: var(--shadow);
+}
+
+.sea-card__title {
+  margin: 0 0 8px;
+  font-family: var(--title);
+  color: var(--c, var(--maroon));
+}
+
+.sea-card__text {
+  line-height: 1.85;
+  margin: 0 0 12px;
+}
+
+.sea-card__watch {
+  margin-bottom: 6px;
+}
+
+.sea-card__pending {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 6px;
+}
+
+@media (max-width: 640px) {
+  .sea-station {
+    padding-top: 60px;
+  }
+  .sea-station__check {
+    width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
+  }
+}

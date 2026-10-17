@@ -26,6 +26,7 @@ import { TeacherPanel } from './ui/Teacher'
 import { PassportButton, PassportModal, StampAward } from './ui/Passport'
 import { ActivityModals, isStation, PlazaMission, StationInfo, StationMission, Toast } from './ui/Station'
 import { StationChallenge, StationRiddle } from './ui/Challenge'
+import { SeaStation } from './ui/SeaStation'
 
 const params = new URLSearchParams(window.location.search)
 const FX = params.get('fx') !== '0'
@@ -45,7 +46,7 @@ function Experience() {
       <Suspense fallback={null}>
         {started && scene === 'gate' && <GateScene key="gate" />}
         {started && scene === 'plaza' && <PlazaScene key="plaza" />}
-        {started && isStation(scene) && <StationScene key={scene} id={scene} />}
+        {started && isStation(scene) && scene !== 'nav' && <StationScene key={scene} id={scene} />}
         {started && scene === 'fort' && <FortScene key="fort" />}
         {started && scene === 'interior' && <InteriorScene key="interior" />}
       </Suspense>
@@ -88,13 +89,19 @@ export default function App() {
       {started && (
         <>
           <TopBar />
-          {scene === 'plaza' ? <PlazaMission /> : isStation(scene) ? <StationMission id={scene} /> : <Mission />}
-          <Compass />
-          <Prompt />
-          {scene === 'fort' && <HotspotInfo />}
-          {scene === 'interior' && <InteriorPanel />}
-          {isStation(scene) && <StationInfo />}
-          <ControlsLayer />
+          {scene === 'nav' ? (
+            <SeaStation />
+          ) : (
+            <>
+              {scene === 'plaza' ? <PlazaMission /> : isStation(scene) ? <StationMission id={scene} /> : <Mission />}
+              <Compass />
+              <Prompt />
+              {scene === 'fort' && <HotspotInfo />}
+              {scene === 'interior' && <InteriorPanel />}
+              {isStation(scene) && <StationInfo />}
+              <ControlsLayer />
+            </>
+          )}
           <PassportButton />
           <Toast />
         </>
