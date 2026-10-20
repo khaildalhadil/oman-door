@@ -488,7 +488,7 @@ export function NavRoomScene() {
   const fly = useRef<{ from: THREE.Vector3; to: THREE.Vector3; lookFrom: THREE.Vector3; lookTo: THREE.Vector3; t0: number; dur: number; done?: () => void } | null>(null)
   const look = useRef(TARGET.clone())
   const lockAnim = useRef<number[]>([]) // start time of each lock's opening
-  const lidK = useRef(useStore.getState().stamps.nav ? 1 : 0)
+  const lidK = useRef(0)
 
   const flyTo = (to: THREE.Vector3, lookTo: THREE.Vector3, dur: number, done?: () => void) => {
     const fast = matchMedia('(prefers-reduced-motion: reduce)').matches
@@ -535,13 +535,14 @@ export function NavRoomScene() {
     room.sun.shadow.map = null
   }, [quality, room])
 
-  // a stamped station starts with its locks already gone (no sound)
+  // each solved question opens the next padlock; a replay puts them back
   useEffect(() => {
+    if (locks < lockAnim.current.length) lockAnim.current = []
     while (lockAnim.current.length < locks) {
-      lockAnim.current.push(stamped ? -1e9 : performance.now())
-      if (!stamped) sfx.ding()
+      lockAnim.current.push(performance.now())
+      sfx.ding()
     }
-  }, [locks, stamped])
+  }, [locks])
 
   // camera follows the mode: the chest close-up or back to the table
   const first = useRef(true)
@@ -584,8 +585,7 @@ export function NavRoomScene() {
     const now = performance.now()
     room.locks.forEach(({ g, shackle }, i) => {
       const s0 = lockAnim.current[i]
-      if (s0 === undefined) return
-      const k = (now - s0) / 1000
+      const k = s0 === undefined ? 0 : (now - s0) / 1000
       shackle.position.y = 0.03 + Math.min(1, k / 0.25) * 0.022
       shackle.rotation.y = Math.min(1, Math.max(0, (k - 0.25) / 0.25)) * (Math.PI / 2)
       const fall = Math.max(0, k - 0.7)
@@ -593,9 +593,9 @@ export function NavRoomScene() {
       g.rotation.z = fall * 3
       g.visible = fall < 0.5
     })
-    lidK.current += ((lid || stamped ? 1 : 0) - lidK.current) * 0.04
+    lidK.current += ((lid ? 1 : 0) - lidK.current) * 0.04
     room.lid.rotation.x = -1.2 * lidK.current
-    const glow = allSeen && !stamped && !lid ? 0.6 + 0.4 * Math.sin(t * 3) : 0
+    const glow = allSeen && !lid ? 0.6 + 0.4 * Math.sin(t * 3) : 0
     room.chestLight.intensity = 5 * lidK.current + glow
     room.gold.material.emissiveIntensity = 0.9 * lidK.current
   })
@@ -606,8 +606,8 @@ export function NavRoomScene() {
     fn()
   }
   const openChest = () => {
-    if (stamped) return showToast('حصلتِ على ختم الملاحة العُمانية ✓ — كنز البحّار مفتوح لكِ')
     if (!allSeen) return showToast(`شاهدي المخطوطات الأربع أولًا (${toAr(seen.length)} من ${toAr(DEF.items.length)}) 📜`)
+    useNavRoom.setState({ locks: 0, lid: false })
     setMode('chest')
   }
   const pointer = (on: boolean) => () => (document.body.style.cursor = on ? 'pointer' : '')

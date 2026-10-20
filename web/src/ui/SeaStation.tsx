@@ -1,6 +1,6 @@
 // واجهة المحطة الأولى «البحر بداية الحكاية» فوق غرفة البحّار ثلاثية الأبعاد (three/NavRoom.tsx):
 // المخطوطات الأربع (فيديو + معلومات + مرجع)، ثم صندوق الكنز بثلاثة أقفال، ثم الختم في الجواز.
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { create } from 'zustand'
 import { sfx } from '../game/sfx'
@@ -98,13 +98,22 @@ function LockRow({ n, open }: { n: number; open: number }) {
   )
 }
 
-/** the challenge: one question per padlock, then the chest opens and the stamp is given */
+/** the challenge: one question per padlock, then the chest opens and the passport shows the new stamp */
 function Treasure() {
   const steps = DEF.challenge
   const { locks, lid, unlock, openLid, setMode } = useNavRoom()
   const finish = useStore((s) => s.finishQuiz)
   const [score, setScore] = useState(0)
+  const awarded = useRef(false)
   const solved = locks >= steps.length
+  const award = () => {
+    if (awarded.current) return
+    awarded.current = true
+    // a replay (stamp already earned) shows the passport again without a second stamp
+    if (useStore.getState().stamps.nav) useStore.setState({ stampAward: 'nav' })
+    else finish('nav', score)
+    setMode('room')
+  }
   useEffect(() => {
     if (!solved || lid) return
     const t = setTimeout(() => {
@@ -113,6 +122,12 @@ function Treasure() {
     }, 1100)
     return () => clearTimeout(t)
   }, [solved, lid, openLid])
+  useEffect(() => {
+    if (!lid) return
+    const t = setTimeout(award, 2600)
+    return () => clearTimeout(t)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [lid])
   const step = steps[locks]
   const next = (first: boolean) => {
     setScore((s) => s + (first ? 1 : 0))
@@ -129,14 +144,8 @@ function Treasure() {
       {lid ? (
         <div className="treasure__win">
           <p className="treasure__msg">أحسنتِ يا قبطانتنا! لقد فككتِ شفرة البحار</p>
-          <button
-            className="btn btn--primary btn--xl"
-            onClick={() => {
-              finish('nav', score)
-              setMode('room')
-            }}
-          >
-            استلمي ختم {DEF.stampLabel} 🏅
+          <button className="btn btn--primary btn--xl" onClick={award}>
+            افتحي جوازكِ 📘
           </button>
         </div>
       ) : solved ? (
@@ -167,16 +176,16 @@ export function SeaStation() {
   const seenCount = DEF.items.filter((it) => seen.includes(it.key)).length
   const allSeen = seenCount === DEF.items.length
 
-  // fresh state per visit; a stamped station keeps its chest open
+  // fresh chest per visit (a student who already has the stamp can replay it)
   useEffect(() => {
-    useNavRoom.setState({ openKey: null, mode: 'room', locks: stamped ? DEF.challenge.length : 0, lid: stamped })
-    return () => useNavRoom.setState({ openKey: null, mode: 'room', locks: 0, lid: false })
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    const reset = () => useNavRoom.setState({ openKey: null, mode: 'room', locks: 0, lid: false })
+    reset()
+    return reset
   }, [])
 
   const chest = () => {
-    if (stamped) return showToast('حصلتِ على ختم الملاحة العُمانية ✓')
     if (!allSeen) return showToast(`شاهدي المخطوطات الأربع أولًا (${toAr(seenCount)} من ${toAr(DEF.items.length)}) 📜`)
+    useNavRoom.setState({ locks: 0, lid: false })
     setMode('chest')
   }
 
@@ -200,13 +209,12 @@ export function SeaStation() {
             <span className="nav-room__hint">
               {stamped ? '✓ حصلتِ على ختم المحطة' : allSeen ? 'افتحي صندوق الكنز 🗝️' : `شاهدتِ ${toAr(seenCount)} من ${toAr(DEF.items.length)} مخطوطات`}
             </span>
-            {stamped ? (
+            <button className={'btn ' + (stamped ? 'btn--ghost' : 'btn--primary') + (allSeen ? '' : ' is-locked')} onClick={chest}>
+              {allSeen ? 'صندوق الكنز 🗝️' : '🔒 صندوق الكنز'}
+            </button>
+            {stamped && (
               <button className="btn btn--primary" onClick={() => goTo('plaza', 'nav')}>
                 التالي: المحطة الثانية ←
-              </button>
-            ) : (
-              <button className={'btn btn--primary' + (allSeen ? '' : ' is-locked')} onClick={chest}>
-                {allSeen ? 'صندوق الكنز 🗝️' : '🔒 صندوق الكنز'}
               </button>
             )}
             <button className="btn btn--ghost btn--sm" onClick={() => goTo('plaza', 'nav')}>

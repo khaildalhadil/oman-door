@@ -1,7 +1,7 @@
-"""ساحة «عُمان تُروى من جديد» - the journey hub.
+"""ساحة «عُمان حكاية بحر» - the journey hub.
 
-A circular heritage plaza with a relief map of Oman in a pool at its centre and five themed
-entrances around it (navigation, Sumhuram, turtles, ivory trade, Omani clothing), plus a
+A circular heritage plaza with a relief map of Oman in a pool at its centre and four themed
+entrances around it (navigation, Sumhuram, turtles, ivory trade), plus a
 bonus gate to Nizwa Fort. Blender Z-up, three.js gets (x, z, -y)."""
 import sys
 import os
@@ -26,7 +26,6 @@ STATIONS = [
     ("sumhuram", 145.0, (0.55, 0.38, 0.22)),
     ("ivory", 90.0, (0.15, 0.42, 0.25)),
     ("turtles", 35.0, (0.05, 0.50, 0.58)),
-    ("clothing", -20.0, (0.48, 0.16, 0.42)),
 ]
 BONUS_ANGLE = 270.0
 
@@ -53,7 +52,6 @@ PINS = {
     "nav": (58.13, 22.57, "المضيبي"),
     "turtles": (59.78, 22.25, "رأس الجنز"),
     "ivory": (58.57, 23.62, "مسقط"),
-    "clothing": (57.53, 22.93, "نزوى"),
     "sumhuram": (54.43, 17.04, "سمهرم"),
 }
 

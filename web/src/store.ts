@@ -22,15 +22,20 @@ const emptyProgress = (): Record<StationId, StationProgress> =>
   >
 
 const JKEY = 'oman3d.journey.v1'
+// station 1 became the manuscripts room + treasure chest: a nav stamp saved before that is dropped once
+const NAV_V = 2
 function loadJourney() {
   try {
     const raw = localStorage.getItem(JKEY)
     if (raw) {
       const j = JSON.parse(raw)
+      const oldNav = j.navV !== NAV_V
+      const stamps = { ...(j.stamps ?? {}) } as Partial<Record<StationId, number>>
+      if (oldNav) delete stamps.nav
       return {
-        stamps: (j.stamps ?? {}) as Partial<Record<StationId, number>>,
+        stamps,
         progress: Object.fromEntries(
-          Object.entries(emptyProgress()).map(([k, v]) => [k, { ...v, ...(j.progress?.[k] ?? {}) }]),
+          Object.entries(emptyProgress()).map(([k, v]) => [k, { ...v, ...(oldNav && k === 'nav' ? {} : (j.progress?.[k] ?? {})) }]),
         ) as Record<StationId, StationProgress>,
         school: (j.school ?? '') as string,
       }
@@ -42,7 +47,7 @@ function loadJourney() {
 }
 function saveJourney(s: { stamps: Partial<Record<StationId, number>>; progress: Record<StationId, StationProgress>; school: string }) {
   try {
-    localStorage.setItem(JKEY, JSON.stringify({ stamps: s.stamps, progress: s.progress, school: s.school }))
+    localStorage.setItem(JKEY, JSON.stringify({ stamps: s.stamps, progress: s.progress, school: s.school, navV: NAV_V }))
   } catch {
     /* ignore */
   }
@@ -88,7 +93,7 @@ interface State {
   videoWatched: boolean
   anim: { name: Anim; t: number }
   prompt: string | null
-  // journey «عُمان تُروى من جديد»
+  // journey «عُمان حكاية بحر»
   stamps: Partial<Record<StationId, number>>
   progress: Record<StationId, StationProgress>
   school: string

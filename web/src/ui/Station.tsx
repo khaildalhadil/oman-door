@@ -23,7 +23,7 @@ export function PlazaMission() {
   const { collapsed, toggle } = useCollapsible()
   const step = next
     ? `الأختام ${toAr(count)}/${toAr(STATION_ORDER.length)} · التالية: ${STATIONS[next].short} (اتبعي السهم)`
-    : 'جمعتِ الأختام الخمسة! 🏅 افتحي جوازكِ'
+    : 'جمعتِ الأختام الأربعة! 🏅 افتحي جوازكِ'
   return (
     <section className={'mission' + (busy ? ' is-hidden' : '') + (collapsed ? ' is-collapsed' : '')}>
       <div className="mission__bar" role="button" tabIndex={0} aria-expanded={!collapsed} onClick={toggle} onKeyDown={(e) => e.key === 'Enter' && toggle()}>
@@ -33,7 +33,7 @@ export function PlazaMission() {
         </div>
         <CollapseToggle collapsed={collapsed} />
       </div>
-      <p>زوري المحطات الخمس بالترتيب الذي تحبينه، وفي كل محطة تحصلين على ختم في جوازكِ. ادخلي من أي مدخل في الساحة، أو اضغطي على اسم المحطة هنا 👇</p>
+      <p>زوري المحطات الأربع بالترتيب الذي تحبينه، وفي كل محطة تحصلين على ختم في جوازكِ. ادخلي من أي مدخل في الساحة، أو اضغطي على اسم المحطة هنا 👇</p>
       <ul className="station-list">
         {STATION_ORDER.map((id) => (
           <li key={id}>

@@ -3,6 +3,7 @@ import { asset } from '../content'
 import { sfx } from '../game/sfx'
 import { JOURNEY, STATION_ORDER, STATIONS, type StationId } from '../stations'
 import { useStore } from '../store'
+import { narrate } from './Narration'
 import { toAr } from './Quiz'
 
 /* ------------------------------------------------------------- icons */
@@ -162,12 +163,13 @@ function Defs() {
 
 /* ------------------------------------------------------------ spread */
 
+// four stations in a 2x2 grid, right-to-left (clothing is no longer part of the journey)
 const SLOTS: Record<StationId, [number, number]> = {
-  nav: [1240, 300],
-  sumhuram: [1040, 300],
-  turtles: [840, 300],
-  ivory: [1140, 545],
-  clothing: [940, 545],
+  nav: [1170, 300],
+  sumhuram: [910, 300],
+  turtles: [1170, 545],
+  ivory: [910, 545],
+  clothing: [0, 0],
 }
 
 export function PassportSpread({ portrait, animateId }: { portrait: string; animateId?: StationId | null }) {
@@ -263,7 +265,7 @@ export function PassportSpread({ portrait, animateId }: { portrait: string; anim
         </g>
       ) : (
         <text x="1040" y="790" textAnchor="middle" fontSize="21" fill="#8a7458" fontFamily="Tajawal, sans-serif">
-          اجمعي الأختام الخمسة لتحصلي على وسام «{JOURNEY.finalTitle}» 🏅
+          اجمعي الأختام الأربعة لتحصلي على وسام «{JOURNEY.finalTitle}» 🏅
         </text>
       )}
     </svg>
@@ -469,6 +471,9 @@ export function StampAward() {
     else {
       setTimeout(() => sfx.stamp(), 650)
       setTimeout(() => sfx.correct(), 900)
+      // the station's closing words («أحسنتِ… انتقلي إلى المحطة التالية») once the stamp lands
+      const outro = STATIONS[award].outro?.audio
+      if (outro) setTimeout(() => narrate(outro), 1500)
     }
   }, [award])
   if (!award) return null
@@ -520,6 +525,7 @@ export function StampAward() {
       <div className="award">
         <span className="kicker">ختم جديد في جوازك!</span>
         <h2>محطة {st.title}</h2>
+        {st.outro?.text && <p className="award__outro">{st.outro.text}</p>}
         <div className="award__page">
           <PassportSpread portrait={portrait} animateId={award} />
         </div>

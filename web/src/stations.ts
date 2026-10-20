@@ -1,4 +1,4 @@
-// محتوى محطات رحلة «عُمان تُروى من جديد» — من مواد الموسوعة العُمانية.
+// محتوى محطات رحلة «عُمان حكاية بحر» — من مواد الموسوعة العُمانية.
 // قالب كل محطة: اكتشفي (لغز «من أنا؟») ← بطاقات المحتوى (النقاط المضيئة) ← النشاط ← تحدي المستكشف
 //               ← «اكتشفي معلومة» 💡 ← المرجع 📚 ← ختم في الجواز.
 // ملاحظة للمدرسة: يمكن تعديل النصوص هنا مباشرة.
@@ -82,13 +82,14 @@ export interface StationDef {
   outro?: { text: string; audio?: string }
 }
 
-export const STATION_ORDER: StationId[] = ['nav', 'sumhuram', 'turtles', 'ivory', 'clothing']
+// «الملابس العُمانية» أُلغيت (طلب المعلمة: نكتفي بأربع محطات)؛ تعريفها باقٍ في STATIONS لكنه خارج الرحلة
+export const STATION_ORDER: StationId[] = ['nav', 'sumhuram', 'turtles', 'ivory']
 
 export const STATIONS: Record<StationId, StationDef> = {
   nav: {
     id: 'nav',
     title: 'البحر بداية الحكاية',
-    short: 'البحر',
+    short: 'البحر بداية الحكاية',
     subtitle: 'موقع عُمان، والملاحة، والتجارة البحرية',
     color: '#1f4e8c',
     stampLabel: 'الملاحة العُمانية',
@@ -167,6 +168,8 @@ export const STATIONS: Record<StationId, StationDef> = {
       title: 'هل تعلمين؟ 💡',
       lines: ['كان البحّارة العُمانيون يختارون موعد رحلاتهم بحسب اتجاه الرياح الموسمية، فيبحرون شتاءً نحو شرق إفريقيا، ويعودون صيفًا إلى سواحل عُمان.'],
     },
+    // shown (and played, once the recording is added as audio) when the stamp lands in the passport
+    outro: { text: 'أحسنتِ! لقد حصلتِ على الختم، انتقلي إلى المحطة التالية.' },
     ref: 'الموسوعة العُمانية، المجلد التاسع ص 3453، والمجلد الرابع ص 1580، والمجلد السادس ص 2106–2107.',
   },
   sumhuram: {
@@ -447,8 +450,8 @@ export const STATIONS: Record<StationId, StationDef> = {
 }
 
 export const JOURNEY = {
-  title: 'عُمان تُروى من جديد',
+  title: 'عُمان حكاية بحر',
   passportTitle: 'جواز مستكشف عُمان',
   finalTitle: 'مستكشف عُمان',
-  finalText: 'أكملتِ الرحلة وجمعتِ الأختام الخمسة! 🎉',
+  finalText: 'أكملتِ الرحلة وجمعتِ الأختام الأربعة! 🎉',
 }

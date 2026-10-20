@@ -41,7 +41,7 @@ if (import.meta.env.DEV) {
     }
     if (q.get('name')) st.setPlayerName(q.get('name')!)
     if (q.get('final')) {
-      for (const id of ['nav', 'sumhuram', 'turtles', 'ivory', 'clothing'] as const) st.finishQuiz(id, 3)
+      for (const id of ['nav', 'sumhuram', 'turtles', 'ivory'] as const) st.finishQuiz(id, 3)
       useStore.setState({ stampAward: 'final' })
     }
     if (q.get('activity')) st.setActivity(q.get('activity'))
