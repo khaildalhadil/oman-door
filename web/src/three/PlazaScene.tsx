@@ -29,7 +29,7 @@ import {
 import { player, Player } from './Player'
 
 type PavId = StationId | 'bonus'
-const PIN_ICON: Record<StationId, string> = { nav: '📜', sumhuram: '🏛', turtles: '🐢', ivory: '🐘', clothing: '👘' }
+const PIN_ICON: Record<StationId, string> = { nav: '📜', sumhuram: '🏛', turtles: '🐢', ivory: '⛵', clothing: '👘' }
 const PAVS: PavId[] = [...STATION_ORDER, 'bonus']
 
 /* ----------------------------------------------------------- sign boards */
@@ -38,7 +38,7 @@ const ICON_PATHS: Record<StationId, string[]> = {
   nav: ['M6 66 L94 62 L84 80 Q50 88 18 82 Z', 'M50 64 L54 64 L49 8 L45 8 Z', 'M88 42 L26 6 L36 62 Q60 50 88 42 Z'],
   sumhuram: ['M10 24 L50 6 L90 24 Z', 'M10 24 H90 V33 H10 Z', 'M18 36 H30 V78 H18 Z', 'M44 36 H56 V78 H44 Z', 'M70 36 H82 V78 H70 Z', 'M6 84 H94 V92 H6 Z'],
   turtles: ['M26 54 A24 28 0 1 0 74 54 A24 28 0 1 0 26 54 Z', 'M41 18 A9 9 0 1 0 59 18 A9 9 0 1 0 41 18 Z', 'M8 34 Q22 26 34 44 Q20 46 8 34 Z', 'M92 34 Q78 26 66 44 Q80 46 92 34 Z', 'M22 86 Q28 74 38 76 Q32 88 22 86 Z', 'M78 86 Q72 74 62 76 Q68 88 78 86 Z'],
-  ivory: ['M26 50 A30 20 0 1 0 86 50 A30 20 0 1 0 26 50 Z', 'M11 44 A15 15 0 1 0 41 44 A15 15 0 1 0 11 44 Z', 'M10 50 Q2 66 10 82 L16 80 Q10 66 18 52 Z', 'M36 60 H45 V84 H36 Z', 'M46 60 H55 V84 H46 Z', 'M64 60 H73 V84 H64 Z', 'M74 60 H83 V84 H74 Z'],
+  ivory: ['M8 52 L92 48 L80 72 Q50 80 20 74 Z', 'M24 30 H29 V52 H24 Z', 'M40 24 H45 V52 H40 Z', 'M56 24 H61 V50 H56 Z', 'M72 30 H77 V50 H72 Z', 'M16 74 H26 V90 H16 Z', 'M74 72 H84 V90 H74 Z', 'M4 90 H96 V95 H4 Z'],
   clothing: ['M38 10 L62 10 L76 24 L71 36 L66 31 L69 90 L31 90 L34 31 L29 36 L24 24 Z'],
 }
 

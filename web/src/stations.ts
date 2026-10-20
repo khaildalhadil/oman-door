@@ -83,7 +83,8 @@ export interface StationDef {
 }
 
 // «الملابس العُمانية» أُلغيت (طلب المعلمة: نكتفي بأربع محطات)؛ تعريفها باقٍ في STATIONS لكنه خارج الرحلة
-export const STATION_ORDER: StationId[] = ['nav', 'sumhuram', 'turtles', 'ivory']
+// ترتيب تصميم المعلمة: البحر بداية الحكاية، سمهرم بوابة الحضارات، سفن صنعت التاريخ، كنوز البحر العُماني
+export const STATION_ORDER: StationId[] = ['nav', 'sumhuram', 'ivory', 'turtles']
 
 export const STATIONS: Record<StationId, StationDef> = {
   nav: {
@@ -174,8 +175,8 @@ export const STATIONS: Record<StationId, StationDef> = {
   },
   sumhuram: {
     id: 'sumhuram',
-    title: 'سمهرم',
-    short: 'سمهرم',
+    title: 'سمهرم بوابة الحضارات',
+    short: 'سمهرم بوابة الحضارات',
     subtitle: 'خور روري · مدينة أثرية في ظفار',
     color: '#8a5a2b',
     stampLabel: 'سمهرم',
@@ -250,11 +251,11 @@ export const STATIONS: Record<StationId, StationDef> = {
   },
   turtles: {
     id: 'turtles',
-    title: 'السلاحف البحرية',
-    short: 'السلاحف',
+    title: 'كنوز البحر العُماني',
+    short: 'كنوز البحر العُماني',
     subtitle: 'السلاحف البحرية في عُمان',
     color: '#138a8a',
-    stampLabel: 'السلاحف',
+    stampLabel: 'كنوز البحر',
     intro: 'الليل هادئ على الشاطئ، والسلاحف البحرية تخرج لتضع بيضها. ساعدي الصغار على الوصول إلى البحر بأمان.',
     riddle: {
       kicker: 'اكتشفي الكائن 🔍',
@@ -317,11 +318,13 @@ export const STATIONS: Record<StationId, StationDef> = {
   },
   ivory: {
     id: 'ivory',
-    title: 'تجارة العاج',
-    short: 'العاج',
-    subtitle: 'عُمان وشرق إفريقيا: التجارة قديمًا',
+    // تحلّ محل «تجارة العاج»؛ المحتوى أدناه مؤقت حتى تصل مادة السفن من المعلمة
+    title: 'سفن صنعت التاريخ',
+    short: 'سفن صنعت التاريخ',
+    subtitle: 'صناعة السفن العُمانية',
     color: '#2f7a3d',
-    stampLabel: 'العاج',
+    stampLabel: 'السفن',
+    pending: 'المحطة قيد التحديث: محتوى «سفن صنعت التاريخ» قادم قريبًا، والمحتوى الحالي مؤقت.',
     intro: 'ادخلي مخزن تاجر قديم، وتتبّعي رحلة العاج: من إفريقيا إلى زنجبار، ثم إلى الأسواق العالمية.',
     riddle: {
       kicker: 'اكتشفي السلعة 🔍',

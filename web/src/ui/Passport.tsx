@@ -47,17 +47,17 @@ export function StationIcon({ id, color }: { id: StationId | 'final'; color: str
         </g>
       )
     case 'ivory':
+      // «سفن صنعت التاريخ»: a dhow hull on its stocks in the shipyard (ribs still open)
       return (
         <g fill={color} stroke={color}>
-          <ellipse cx="56" cy="50" rx="30" ry="20" />
-          <circle cx="26" cy="44" r="15" />
-          <ellipse cx="34" cy="44" rx="9" ry="14" opacity="0.8" />
-          <path d="M14 48 Q4 66 14 80" strokeWidth="7" fill="none" strokeLinecap="round" />
-          {[36, 46, 64, 74].map((x) => (
-            <rect key={x} x={x} y="60" width="9" height="24" rx="2" />
+          <path d="M8 52 L92 48 L80 72 Q50 80 20 74 Z" />
+          {[24, 40, 56, 72].map((x, k) => (
+            <rect key={x} x={x} y={k % 3 ? 24 : 30} width="5" height={k % 3 ? 28 : 22} rx="1" />
           ))}
-          <path d="M18 58 Q22 68 32 64" stroke="#fff8e8" strokeWidth="4" fill="none" strokeLinecap="round" />
-          <path d="M86 46 L94 58" strokeWidth="3" fill="none" />
+          <path d="M18 34 Q50 18 84 32" strokeWidth="4" fill="none" />
+          <rect x="16" y="74" width="10" height="16" />
+          <rect x="74" y="72" width="10" height="18" />
+          <rect x="4" y="90" width="92" height="5" />
         </g>
       )
     case 'clothing':
@@ -167,8 +167,8 @@ function Defs() {
 const SLOTS: Record<StationId, [number, number]> = {
   nav: [1170, 300],
   sumhuram: [910, 300],
-  turtles: [1170, 545],
-  ivory: [910, 545],
+  ivory: [1170, 545],
+  turtles: [910, 545],
   clothing: [0, 0],
 }
 

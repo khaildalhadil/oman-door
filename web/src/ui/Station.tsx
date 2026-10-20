@@ -107,6 +107,7 @@ export function StationMission({ id }: { id: StationId }) {
             <span className="kicker">محطة · {def.subtitle}</span>
             <h3>{def.short}</h3>
             <span className="mission__step">{step}</span>
+            {def.pending && <span className="mission__pending">⏳ {def.pending}</span>}
           </div>
         </div>
         <CollapseToggle collapsed={collapsed} />
