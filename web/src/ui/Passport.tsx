@@ -10,15 +10,13 @@ import { toAr } from './Quiz'
 export function StationIcon({ id, color }: { id: StationId | 'final'; color: string }) {
   switch (id) {
     case 'nav':
-      // open book + quill (Hamad bin Saif: judge, historian, author)
+      // a dhow under lateen sails (Omani navigation)
       return (
         <g fill={color} stroke={color}>
-          <path d="M6 40 Q27 31 48 40 L48 90 Q27 81 6 90 Z" />
-          <path d="M52 40 Q73 31 94 40 L94 90 Q73 81 52 90 Z" />
-          <path d="M14 52 Q27 47 40 52 M14 63 Q27 58 40 63 M14 74 Q27 69 40 74 M60 52 Q73 47 86 52 M60 63 Q73 58 86 63"
-            stroke="#fff8e8" strokeWidth="3" fill="none" opacity="0.85" />
-          <path d="M80 4 Q97 9 86 28 L66 52 L61 48 Z" opacity="0.9" />
-          <path d="M66 52 L58 62" strokeWidth="3" fill="none" />
+          <path d="M6 66 L94 62 L84 80 Q50 88 18 82 Z" />
+          <path d="M52 64 L47 8" strokeWidth="4" fill="none" />
+          <path d="M88 42 L26 6 L36 62 Q60 50 88 42 Z" opacity="0.85" />
+          <path d="M6 94 q8 -6 16 0 t16 0 t16 0 t16 0 t16 0" strokeWidth="4" fill="none" strokeLinecap="round" />
         </g>
       )
     case 'sumhuram':
@@ -105,6 +103,12 @@ const ROT: Record<StationId, number> = { nav: -10, sumhuram: 7, turtles: -5, ivo
 export function StampMark({ id, x, y, r = 92, date, animate }: { id: StationId; x: number; y: number; r?: number; date?: number; animate?: boolean }) {
   const st = STATIONS[id]
   const k = r / 92
+  if (st.stampImage)
+    return (
+      <g transform={`translate(${x} ${y}) rotate(${ROT[id]}) scale(${k})`}>
+        <image className={animate ? 'stamp-in' : undefined} href={st.stampImage} x="-92" y="-92" width="184" height="184" />
+      </g>
+    )
   return (
     <g transform={`translate(${x} ${y}) rotate(${ROT[id]}) scale(${k})`}>
       <g className={animate ? 'stamp-in' : undefined} filter="url(#ink)">
@@ -312,11 +316,9 @@ async function toDataURL(url: string) {
   })
 }
 
-async function downloadPassport(svg: SVGSVGElement | null, name: string) {
-  if (!svg) return
+async function passportPNG(svg: SVGSVGElement) {
   const clone = svg.cloneNode(true) as SVGSVGElement
-  const img = clone.querySelector('image')
-  if (img) img.setAttribute('href', await toDataURL(img.getAttribute('href')!))
+  for (const img of clone.querySelectorAll('image')) img.setAttribute('href', await toDataURL(img.getAttribute('href')!))
   clone.querySelectorAll('.stamp-in, .medal-in').forEach((e) => e.removeAttribute('class'))
   const data = new XMLSerializer().serializeToString(clone)
   const im = new Image()
@@ -326,10 +328,32 @@ async function downloadPassport(svg: SVGSVGElement | null, name: string) {
   c.width = 2100
   c.height = 1350
   c.getContext('2d')!.drawImage(im, 0, 0, c.width, c.height)
+  return c.toDataURL('image/png')
+}
+
+async function downloadPassport(svg: SVGSVGElement | null, name: string) {
+  if (!svg) return
   const a = document.createElement('a')
-  a.href = c.toDataURL('image/png')
+  a.href = await passportPNG(svg)
   a.download = `جواز-مستكشف-عمان-${name || 'طالبة'}.png`
   a.click()
+}
+
+/** prints the passport alone on an A4 landscape page (see .passport-print in journey.css) */
+async function printPassport(svg: SVGSVGElement | null) {
+  if (!svg) return
+  const img = new Image()
+  img.className = 'passport-print'
+  img.src = await passportPNG(svg)
+  await img.decode()
+  document.body.append(img)
+  document.documentElement.classList.add('is-printing')
+  const done = () => {
+    img.remove()
+    document.documentElement.classList.remove('is-printing')
+  }
+  addEventListener('afterprint', done, { once: true })
+  window.print()
 }
 
 /* ------------------------------------------------------------ modal */
@@ -364,6 +388,7 @@ export function PassportModal() {
   const school = useStore((s) => s.school)
   const setSchool = useStore((s) => s.setSchool)
   const resetJourney = useStore((s) => s.resetJourney)
+  const complete = useStore((s) => STATION_ORDER.every((id) => s.stamps[id]))
   const [cover, setCover] = useState(true)
   const [confirm, setConfirm] = useState(false)
   const portrait = asset('images/maryam.png')
@@ -400,7 +425,12 @@ export function PassportModal() {
                 <span>المدرسة</span>
                 <input value={school} maxLength={50} onChange={(e) => setSchool(e.target.value)} placeholder="اسم المدرسة" />
               </label>
-              <button className="btn btn--primary" onClick={() => downloadPassport(document.querySelector('.passport__svg'), name)}>
+              {complete && (
+                <button className="btn btn--primary" onClick={() => printPassport(document.querySelector('.passport__svg'))}>
+                  🖨 طباعة الجواز
+                </button>
+              )}
+              <button className={'btn ' + (complete ? 'btn--ghost' : 'btn--primary')} onClick={() => downloadPassport(document.querySelector('.passport__svg'), name)}>
                 ⬇ تحميل الجواز
               </button>
               {!confirm ? (

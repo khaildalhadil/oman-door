@@ -1,134 +1,212 @@
-// محطة «البحر بداية الحكاية» — مشهد بحري تراثي تفاعلي بأربع صحائف مستقلة.
-// يحل محل المشهد ثلاثي الأبعاد لمحطة nav فقط (راجع App.tsx: scene === 'nav').
-import { useState } from 'react'
+// واجهة المحطة الأولى «البحر بداية الحكاية» فوق غرفة البحّار ثلاثية الأبعاد (three/NavRoom.tsx):
+// المخطوطات الأربع (فيديو + معلومات + مرجع)، ثم صندوق الكنز بثلاثة أقفال، ثم الختم في الجواز.
+import { useEffect, useState } from 'react'
 import { createPortal } from 'react-dom'
-import { asset } from '../content'
+import { create } from 'zustand'
+import { sfx } from '../game/sfx'
 import { STATIONS } from '../stations'
 import { useStore } from '../store'
-import { Narration } from './Narration'
+import { ChoiceStep, OrderStep } from './Challenge'
+import { Narration, stopNarration } from './Narration'
 import { toAr } from './Quiz'
 
 const DEF = STATIONS.nav
-const HERO = asset('images/nav/hero.webp')
 
-/** مواضع الصحائف الأربع المغلقة فوق صورة المشهد (% من صندوق الصورة) */
-const CARD_POS: Record<string, { left: number; top: number; width: number; height: number }> = {
-  location: { left: 6, top: 49, width: 21, height: 46 },
-  sailor: { left: 28.5, top: 49, width: 21, height: 46 },
-  routes: { left: 51, top: 49, width: 21, height: 46 },
-  trade: { left: 73.5, top: 49, width: 21, height: 46 },
+interface NavRoomState {
+  openKey: string | null
+  mode: 'room' | 'chest'
+  locks: number
+  lid: boolean
+  setOpen: (k: string | null) => void
+  setMode: (m: 'room' | 'chest') => void
+  unlock: () => void
+  openLid: () => void
 }
+export const useNavRoom = create<NavRoomState>((set) => ({
+  openKey: null,
+  mode: 'room',
+  locks: 0,
+  lid: false,
+  setOpen: (openKey) => set({ openKey }),
+  setMode: (mode) => set({ mode }),
+  unlock: () => set((s) => ({ locks: s.locks + 1 })),
+  openLid: () => set({ lid: true }),
+}))
 
-function VideoPlayer({ src, poster, onClose }: { src: string; poster?: string; onClose: () => void }) {
-  // محمولة إلى document.body: محطة البحر تُنشئ سياق تكديس خاصًا بها (position: fixed)،
-  // فبدون هذا الـ portal يُحبَس هذا المودال تحت عناصر الواجهة الثابتة (زر الجواز، الشريط العلوي).
+function Manuscript({ itemKey }: { itemKey: string }) {
+  const i = DEF.items.findIndex((x) => x.key === itemKey)
+  const it = DEF.items[i]
+  const close = () => useNavRoom.getState().setOpen(null)
+  const seen = useStore((s) => s.progress.nav.seen.includes(itemKey))
+  const markSeen = useStore((s) => s.markSeen)
+  const showToast = useStore((s) => s.showToast)
+  const done = () => {
+    if (useStore.getState().progress.nav.seen.includes(it.key)) return
+    markSeen('nav', it.key)
+    sfx.ding()
+    const n = useStore.getState().progress.nav.seen.length
+    showToast(n >= DEF.items.length ? 'أحسنتِ! شاهدتِ المخطوطات الأربع، وصندوق الكنز ينتظركِ 🗝️' : `أحسنتِ! أنهيتِ «${it.title}» ✓`)
+  }
+  useEffect(() => {
+    stopNarration()
+    if (!it.video) done()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [itemKey])
+  // portal: keeps the modal above the fixed HUD (passport button, top bar)
   return createPortal(
-    <div className="modal" onClick={onClose} role="dialog" aria-modal aria-label="فيديو الصحيفة">
-      <div className="modal__box" onClick={(e) => e.stopPropagation()}>
+    <div className="modal" onClick={close} role="dialog" aria-modal aria-label={it.title}>
+      <div className="modal__box nav-scroll" onClick={(e) => e.stopPropagation()}>
         <div className="modal__head">
           <div>
-            <span className="kicker">طرق عبر البحار والرياح</span>
-            <h3>فيديو الصحيفة</h3>
+            <span className="kicker">
+              المخطوطة {toAr(i + 1)} من {toAr(DEF.items.length)}
+            </span>
+            <h3>
+              <span aria-hidden>{it.icon}</span> {it.title}
+            </h3>
           </div>
-          <button className="icon-btn" onClick={onClose} aria-label="إغلاق">
+          <button className="icon-btn" onClick={close} aria-label="إغلاق">
             ✕
           </button>
         </div>
-        <video src={src} poster={poster} controls autoPlay playsInline className="modal__video" />
+        {it.video && <video src={it.video} poster={it.poster} controls autoPlay playsInline className="nav-scroll__video" onEnded={done} />}
+        <div className="nav-scroll__text">
+          {it.text.split('\n').map((p, k) => (
+            <p key={k}>{p}</p>
+          ))}
+        </div>
+        {it.ref && <p className="info__ref">📚 {it.ref}</p>}
+        {it.video && !seen && <p className="nav-scroll__hint">شاهدي الفيديو حتى النهاية لتُحتسب المخطوطة ✓</p>}
+        <button className="btn btn--primary nav-scroll__ok" onClick={close}>
+          تم
+        </button>
       </div>
     </div>,
     document.body,
   )
 }
 
-function OpenCard({ itemKey, onBack }: { itemKey: string; onBack: () => void }) {
-  const it = DEF.items.find((x) => x.key === itemKey)!
-  const [videoOpen, setVideoOpen] = useState(false)
+function LockRow({ n, open }: { n: number; open: number }) {
   return (
-    <div className="sea-card">
-      <button className="btn btn--ghost btn--sm sea-card__back" onClick={onBack}>
-        ↩ عودة إلى الصحائف
-      </button>
-      <div className="sea-card__stage">
-        <img src={it.image} alt={it.title} className="sea-card__img" />
+    <span className="treasure__locks" aria-label={`فُتح ${toAr(open)} من ${toAr(n)} أقفال`}>
+      {Array.from({ length: n }, (_, k) => (
+        <i key={k} className={k < open ? 'is-open' : ''}>
+          {k < open ? '🔓' : '🔒'}
+        </i>
+      ))}
+    </span>
+  )
+}
+
+/** the challenge: one question per padlock, then the chest opens and the stamp is given */
+function Treasure() {
+  const steps = DEF.challenge
+  const { locks, lid, unlock, openLid, setMode } = useNavRoom()
+  const finish = useStore((s) => s.finishQuiz)
+  const [score, setScore] = useState(0)
+  const solved = locks >= steps.length
+  useEffect(() => {
+    if (!solved || lid) return
+    const t = setTimeout(() => {
+      openLid()
+      sfx.win()
+    }, 1100)
+    return () => clearTimeout(t)
+  }, [solved, lid, openLid])
+  const step = steps[locks]
+  const next = (first: boolean) => {
+    setScore((s) => s + (first ? 1 : 0))
+    unlock()
+  }
+  return (
+    <div className="treasure" style={{ ['--c' as string]: DEF.color }}>
+      <div className="treasure__head">
+        <span className="quiz__badge" style={{ background: DEF.color }}>
+          صندوق كنز البحّار 🗝️
+        </span>
+        <LockRow n={steps.length} open={Math.min(locks, steps.length)} />
       </div>
-      <div className="sea-card__panel" style={{ ['--c' as string]: DEF.color }}>
-        <h3 className="sea-card__title">
-          <span aria-hidden>{it.icon}</span> {it.title}
-        </h3>
-        <p className="sea-card__text">{it.text}</p>
-        {it.video ? (
-          <button className="btn btn--primary sea-card__watch" onClick={() => setVideoOpen(true)}>
-            🎬 شاهدي الفيديو
+      {lid ? (
+        <div className="treasure__win">
+          <p className="treasure__msg">أحسنتِ يا قبطانتنا! لقد فككتِ شفرة البحار</p>
+          <button
+            className="btn btn--primary btn--xl"
+            onClick={() => {
+              finish('nav', score)
+              setMode('room')
+            }}
+          >
+            استلمي ختم {DEF.stampLabel} 🏅
           </button>
-        ) : it.audio ? (
-          <Narration src={it.audio} label="استمعي للتسجيل 🔊" />
-        ) : (
-          <p className="sea-card__pending">🎙️ التسجيل الصوتي قادم قريبًا</p>
-        )}
-        {it.ref && <p className="info__ref">📚 {it.ref}</p>}
-      </div>
-      {videoOpen && it.video && <VideoPlayer src={it.video} poster={it.poster} onClose={() => setVideoOpen(false)} />}
+        </div>
+      ) : solved ? (
+        <p className="treasure__msg">انفتحت الأقفال الثلاثة… 🔓</p>
+      ) : (
+        <div key={locks} className="treasure__step">
+          {'title' in step && step.title && <h3 className="treasure__title">{step.title}</h3>}
+          {step.kind === 'choice' && step.image && <img className="treasure__img" src={step.image} alt="" />}
+          {step.kind === 'choice' && <ChoiceStep step={step} onDone={next} />}
+          {step.kind === 'order' && <OrderStep step={step} onDone={next} />}
+        </div>
+      )}
+      {!lid && (
+        <button className="quiz__later" onClick={() => setMode('room')}>
+          لاحقاً
+        </button>
+      )}
     </div>
   )
 }
 
 export function SeaStation() {
-  const [opened, setOpened] = useState<string | null>(null)
-  const pr = useStore((s) => s.progress.nav)
-  const markSeen = useStore((s) => s.markSeen)
+  const { openKey, mode, setOpen, setMode } = useNavRoom()
+  const seen = useStore((s) => s.progress.nav.seen)
   const stamped = useStore((s) => !!s.stamps.nav)
-  const setStationQuiz = useStore((s) => s.setStationQuiz)
   const goTo = useStore((s) => s.goTo)
-  const seenCount = DEF.items.filter((it) => pr.seen.includes(it.key)).length
+  const showToast = useStore((s) => s.showToast)
+  const seenCount = DEF.items.filter((it) => seen.includes(it.key)).length
   const allSeen = seenCount === DEF.items.length
 
-  const open = (key: string) => {
-    markSeen('nav', key)
-    setOpened(key)
+  // fresh state per visit; a stamped station keeps its chest open
+  useEffect(() => {
+    useNavRoom.setState({ openKey: null, mode: 'room', locks: stamped ? DEF.challenge.length : 0, lid: stamped })
+    return () => useNavRoom.setState({ openKey: null, mode: 'room', locks: 0, lid: false })
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  const chest = () => {
+    if (stamped) return showToast('حصلتِ على ختم الملاحة العُمانية ✓')
+    if (!allSeen) return showToast(`شاهدي المخطوطات الأربع أولًا (${toAr(seenCount)} من ${toAr(DEF.items.length)}) 📜`)
+    setMode('chest')
   }
 
   return (
-    <div className="sea-station">
-      {opened ? (
-        <OpenCard itemKey={opened} onBack={() => setOpened(null)} />
+    <div className="nav-room">
+      {mode === 'chest' ? (
+        <Treasure />
       ) : (
-        <div className="sea-station__overview">
-          <div className="sea-station__stage">
-            <img src={HERO} alt={DEF.title} className="sea-station__hero" />
-            {DEF.items.map((it) => {
-              const p = CARD_POS[it.key]
-              const seen = pr.seen.includes(it.key)
-              return (
-                <button
-                  key={it.key}
-                  className={'sea-station__hit' + (seen ? ' is-seen' : '')}
-                  style={{ left: `${p.left}%`, top: `${p.top}%`, width: `${p.width}%`, height: `${p.height}%` }}
-                  onClick={() => open(it.key)}
-                  aria-label={it.title}
-                >
-                  {seen && <span className="sea-station__check">✓</span>}
-                </button>
-              )
-            })}
+        <div className="nav-room__bar">
+          <div className="nav-room__chips">
+            {DEF.items.map((it, i) => (
+              <button key={it.key} className={'nav-tag' + (seen.includes(it.key) ? ' is-done' : '')} onClick={() => setOpen(it.key)}>
+                <span className="nav-tag__n">{toAr(i + 1)}</span>
+                <span className="nav-tag__t">{it.title}</span>
+                {seen.includes(it.key) && <span className="nav-tag__ck">✓</span>}
+              </button>
+            ))}
           </div>
-          <Narration src={DEF.introAudio} label="رسالة الترحيب 🔊" />
-          <p className="muted sea-station__hint">
-            {allSeen
-              ? 'قرأتِ الصحائف الأربع! 🎉'
-              : `فتحتِ ${toAr(seenCount)} من ${toAr(DEF.items.length)} صحائف — اضغطي على أي صحيفة لتفتحيها`}
-          </p>
-          <div className="mission__actions sea-station__actions">
+          <div className="nav-room__row">
+            <Narration src={DEF.introAudio} label="رسالة الترحيب 🔊" />
+            <span className="nav-room__hint">
+              {stamped ? '✓ حصلتِ على ختم المحطة' : allSeen ? 'افتحي صندوق الكنز 🗝️' : `شاهدتِ ${toAr(seenCount)} من ${toAr(DEF.items.length)} مخطوطات`}
+            </span>
             {stamped ? (
-              <>
-                <span className="stamp-ok">✓ حصلتِ على ختم المحطة</span>
-                <button className="btn btn--primary btn--xl" onClick={() => goTo('plaza', 'nav')}>
-                  التالي: المحطة الثانية ←
-                </button>
-              </>
+              <button className="btn btn--primary" onClick={() => goTo('plaza', 'nav')}>
+                التالي: المحطة الثانية ←
+              </button>
             ) : (
-              <button className="btn btn--primary btn--xl" disabled={!allSeen} onClick={() => setStationQuiz('nav')}>
-                {allSeen ? 'ابدئي تحدي المستكشف 🗝️' : '🔒 تحدي المستكشف'}
+              <button className={'btn btn--primary' + (allSeen ? '' : ' is-locked')} onClick={chest}>
+                {allSeen ? 'صندوق الكنز 🗝️' : '🔒 صندوق الكنز'}
               </button>
             )}
             <button className="btn btn--ghost btn--sm" onClick={() => goTo('plaza', 'nav')}>
@@ -137,6 +215,7 @@ export function SeaStation() {
           </div>
         </div>
       )}
+      {openKey && <Manuscript itemKey={openKey} />}
     </div>
   )
 }

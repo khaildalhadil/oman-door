@@ -7,6 +7,7 @@ import { FortScene } from './three/FortScene'
 import { InteriorScene } from './three/InteriorScene'
 import { PlazaScene } from './three/PlazaScene'
 import { StationScene } from './three/StationScene'
+import { NavRoomScene } from './three/NavRoom'
 import { Effects } from './three/Atmosphere'
 import {
   Compass,
@@ -30,7 +31,7 @@ import { SeaStation } from './ui/SeaStation'
 
 const params = new URLSearchParams(window.location.search)
 const FX = params.get('fx') !== '0'
-const INDOOR = ['interior', 'ivory', 'clothing']
+const INDOOR = ['interior', 'nav', 'ivory', 'clothing']
 
 function DevExpose() {
   const state = useThree()
@@ -46,6 +47,7 @@ function Experience() {
       <Suspense fallback={null}>
         {started && scene === 'gate' && <GateScene key="gate" />}
         {started && scene === 'plaza' && <PlazaScene key="plaza" />}
+        {started && scene === 'nav' && <NavRoomScene key="nav" />}
         {started && isStation(scene) && scene !== 'nav' && <StationScene key={scene} id={scene} />}
         {started && scene === 'fort' && <FortScene key="fort" />}
         {started && scene === 'interior' && <InteriorScene key="interior" />}

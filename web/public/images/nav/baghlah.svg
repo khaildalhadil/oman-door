@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 520" role="img" aria-label="سفينة عُمانية تقليدية">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#f3e2bf"/>
+      <stop offset="1" stop-color="#f8eedb"/>
+    </linearGradient>
+    <linearGradient id="sea" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#2f8a96"/>
+      <stop offset="1" stop-color="#1b5563"/>
+    </linearGradient>
+    <linearGradient id="hull" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#b9783f"/>
+      <stop offset="1" stop-color="#6e3f1d"/>
+    </linearGradient>
+    <linearGradient id="sail" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#fffaf0"/>
+      <stop offset="1" stop-color="#e9dcc0"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="520" fill="url(#sky)"/>
+  <circle cx="640" cy="110" r="46" fill="#f6d79a" opacity="0.8"/>
+  <path d="M0 360 Q60 336 120 346 Q150 330 190 344 L190 368 L0 368 Z" fill="#a8956a"/>
+  <g fill="#5d6b3a"><path d="M70 344 q4 -40 2 -56 M70 290 q-18 -4 -30 6 M72 290 q20 -6 30 4 M71 292 q-6 -16 -22 -20 M72 292 q8 -16 24 -18" stroke="#5d6b3a" stroke-width="5" fill="none" stroke-linecap="round"/></g>
+  <rect y="362" width="800" height="158" fill="url(#sea)"/>
+  <g stroke="#ffffff" stroke-opacity="0.35" stroke-width="3" stroke-linecap="round">
+    <path d="M60 400 h40 M220 430 h60 M520 410 h50 M650 450 h70 M120 470 h50 M380 490 h60 M700 395 h40"/>
+  </g>
+  <g stroke="#3a2a1a" stroke-width="3" fill="none" stroke-linecap="round">
+    <path d="M560 160 q8 -8 16 0 q8 -8 16 0"/><path d="M610 200 q6 -6 12 0 q6 -6 12 0"/>
+  </g>
+
+  <!-- masts and yards -->
+  <g stroke="#4a2c14" stroke-linecap="round">
+    <line x1="430" y1="352" x2="410" y2="70" stroke-width="9"/>
+    <line x1="250" y1="340" x2="238" y2="140" stroke-width="7"/>
+    <line x1="640" y1="250" x2="215" y2="58" stroke-width="6"/>
+    <line x1="420" y1="210" x2="150" y2="118" stroke-width="5"/>
+  </g>
+  <!-- lateen sails -->
+  <path d="M632 252 L222 64 Q300 210 330 336 Q470 300 632 252 Z" fill="url(#sail)" stroke="#8a7350" stroke-width="3"/>
+  <path d="M414 212 L156 122 Q196 220 214 326 Q320 290 414 212 Z" fill="url(#sail)" stroke="#8a7350" stroke-width="3"/>
+  <g stroke="#b9a37a" stroke-width="2" opacity="0.7">
+    <path d="M300 100 Q340 210 360 320 M380 136 Q410 220 430 300 M460 172 Q490 230 510 286"/>
+    <path d="M200 150 Q226 230 238 310 M270 172 Q290 230 300 296"/>
+  </g>
+  <!-- rigging -->
+  <g stroke="#4a2c14" stroke-width="2" opacity="0.8">
+    <line x1="410" y1="74" x2="660" y2="330"/><line x1="410" y1="74" x2="300" y2="352"/>
+    <line x1="238" y1="144" x2="150" y2="352"/>
+  </g>
+
+  <!-- hull: long raked bow on the right, tall square carved stern on the left -->
+  <path d="M120 300 L150 300 L162 352 L640 340 Q700 322 742 286 L752 292 Q716 360 640 396 L210 404 Q150 400 132 384 Z" fill="url(#hull)" stroke="#3f2410" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M118 244 L196 250 L190 336 L130 330 Z" fill="#8b5a2d" stroke="#3f2410" stroke-width="4" stroke-linejoin="round"/>
+  <path d="M112 236 L202 242" stroke="#3f2410" stroke-width="7" stroke-linecap="round"/>
+  <g fill="#f3d58a" stroke="#3f2410" stroke-width="2.5">
+    <rect x="138" y="262" width="16" height="20" rx="7"/><rect x="164" y="264" width="16" height="20" rx="7"/>
+    <rect x="140" y="296" width="14" height="16" rx="6"/><rect x="164" y="298" width="14" height="16" rx="6"/>
+  </g>
+  <path d="M162 362 L690 346" stroke="#e8c27a" stroke-width="5"/>
+  <path d="M170 378 L640 368" stroke="#3f2410" stroke-width="2" opacity="0.6"/>
+  <g fill="#3f2410">
+    <circle cx="260" cy="356" r="4"/><circle cx="330" cy="355" r="4"/><circle cx="400" cy="353" r="4"/><circle cx="470" cy="351" r="4"/><circle cx="540" cy="349" r="4"/>
+  </g>
+  <path d="M120 404 Q300 418 460 410 Q620 404 720 380" stroke="#ffffff" stroke-opacity="0.45" stroke-width="4" fill="none" stroke-linecap="round"/>
+</svg>

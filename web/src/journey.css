@@ -997,3 +997,28 @@
     padding: 5px;
   }
 }
+
+/* ------------------------------------------------- print the passport */
+.passport-print {
+  display: none;
+}
+
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+  html.is-printing body > *:not(.passport-print) {
+    display: none !important;
+  }
+  html.is-printing,
+  html.is-printing body {
+    background: #fff !important;
+    overflow: visible !important;
+  }
+  html.is-printing .passport-print {
+    display: block;
+    width: 100%;
+    height: auto;
+  }
+}
