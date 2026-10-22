@@ -22,20 +22,26 @@ const emptyProgress = (): Record<StationId, StationProgress> =>
   >
 
 const JKEY = 'oman3d.journey.v1'
-// station 1 became the manuscripts room + treasure chest: a nav stamp saved before that is dropped once
-const NAV_V = 2
+// a station that was rebuilt drops what was saved for its old version, once:
+// v2 nav became the manuscripts room + treasure chest; v3 ivory (ivory trade) became «سفن صنعت التاريخ»
+const NAV_V = 3
+const REBUILT: [StationId, number][] = [
+  ['nav', 2],
+  ['ivory', 3],
+]
 function loadJourney() {
   try {
     const raw = localStorage.getItem(JKEY)
     if (raw) {
       const j = JSON.parse(raw)
-      const oldNav = j.navV !== NAV_V
+      const v = (j.navV ?? 1) as number
+      const stale = new Set(REBUILT.filter(([, since]) => v < since).map(([id]) => id))
       const stamps = { ...(j.stamps ?? {}) } as Partial<Record<StationId, number>>
-      if (oldNav) delete stamps.nav
+      for (const id of stale) delete stamps[id]
       return {
         stamps,
         progress: Object.fromEntries(
-          Object.entries(emptyProgress()).map(([k, v]) => [k, { ...v, ...(oldNav && k === 'nav' ? {} : (j.progress?.[k] ?? {})) }]),
+          Object.entries(emptyProgress()).map(([k, v]) => [k, { ...v, ...(stale.has(k as StationId) ? {} : (j.progress?.[k] ?? {})) }]),
         ) as Record<StationId, StationProgress>,
         school: (j.school ?? '') as string,
       }

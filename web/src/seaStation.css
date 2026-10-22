@@ -260,3 +260,109 @@
     padding-bottom: max(12px, env(safe-area-inset-bottom));
   }
 }
+
+/* ------------------------------------- station 3 «سفن صنعت التاريخ» */
+
+.ship-intro {
+  position: absolute;
+  left: 50%;
+  bottom: max(24px, env(safe-area-inset-bottom));
+  translate: -50% 0;
+  width: min(520px, calc(100% - 32px));
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  padding: 18px 20px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  background: var(--glass);
+  box-shadow: var(--shadow);
+  text-align: center;
+  pointer-events: auto;
+  animation: fadein 0.6s ease both;
+}
+
+.ship-intro h2 {
+  margin: 0;
+  font-family: var(--title);
+  font-size: 1.7rem;
+  color: var(--gold-2);
+}
+
+.ship-intro p {
+  margin: 0;
+  line-height: 1.8;
+}
+
+.ship-fade {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: #0b0705;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.45s ease;
+}
+
+.ship-fade.is-on {
+  opacity: 1;
+}
+
+.captain-btn {
+  animation: nav-glow 1.6s ease-in-out infinite;
+}
+
+.podcast__player {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border: 1px solid var(--line);
+  background: rgba(0, 0, 0, 0.28);
+}
+
+.podcast__play {
+  flex: 0 0 auto;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  border: 0;
+  background: var(--gold);
+  color: var(--ink);
+  font-size: 1.3rem;
+}
+
+.podcast__bar {
+  flex: 1;
+  min-width: 0;
+  height: 8px;
+  appearance: none;
+  border-radius: 999px;
+  background: linear-gradient(to left, var(--gold) var(--p, 0%), rgba(255, 255, 255, 0.18) var(--p, 0%));
+  cursor: pointer;
+}
+
+.podcast__bar::-webkit-slider-thumb {
+  appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold-2);
+  border: 2px solid var(--ink);
+}
+
+.podcast__bar::-moz-range-thumb {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--gold-2);
+  border: 2px solid var(--ink);
+}
+
+.podcast__time {
+  flex: 0 0 auto;
+  font-variant-numeric: tabular-nums;
+  color: var(--sand);
+  font-size: 0.9rem;
+}

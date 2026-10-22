@@ -28,6 +28,8 @@ import { PassportButton, PassportModal, StampAward } from './ui/Passport'
 import { ActivityModals, isStation, PlazaMission, StationInfo, StationMission, Toast } from './ui/Station'
 import { StationChallenge, StationRiddle } from './ui/Challenge'
 import { SeaStation } from './ui/SeaStation'
+import { ShipStation, useShip } from './ui/ShipStation'
+import { ShipScene } from './three/ShipScene'
 
 const params = new URLSearchParams(window.location.search)
 const FX = params.get('fx') !== '0'
@@ -42,17 +44,19 @@ function DevExpose() {
 function Experience() {
   const scene = useStore((s) => s.scene)
   const started = useStore((s) => s.started)
+  const atSea = useShip((s) => s.phase === 'sea')
   return (
     <>
       <Suspense fallback={null}>
         {started && scene === 'gate' && <GateScene key="gate" />}
         {started && scene === 'plaza' && <PlazaScene key="plaza" />}
         {started && scene === 'nav' && <NavRoomScene key="nav" />}
-        {started && isStation(scene) && scene !== 'nav' && <StationScene key={scene} id={scene} />}
+        {started && scene === 'ivory' && <ShipScene key="ivory" />}
+        {started && isStation(scene) && scene !== 'nav' && scene !== 'ivory' && <StationScene key={scene} id={scene} />}
         {started && scene === 'fort' && <FortScene key="fort" />}
         {started && scene === 'interior' && <InteriorScene key="interior" />}
       </Suspense>
-      {FX && <Effects indoor={INDOOR.includes(scene)} />}
+      {FX && <Effects indoor={INDOOR.includes(scene) && !(scene === 'ivory' && atSea)} />}
       <DevExpose />
       <PerformanceMonitor bounds={() => [22, 45]} flipflops={3} onDecline={() => useStore.getState().setQuality('low')} />
     </>
@@ -93,6 +97,8 @@ export default function App() {
           <TopBar />
           {scene === 'nav' ? (
             <SeaStation />
+          ) : scene === 'ivory' ? (
+            <ShipStation />
           ) : (
             <>
               {scene === 'plaza' ? <PlazaMission /> : isStation(scene) ? <StationMission id={scene} /> : <Mission />}
