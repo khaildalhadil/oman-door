@@ -166,8 +166,8 @@ function Defs() {
 // four stations in a 2x2 grid, right-to-left (clothing is no longer part of the journey)
 const SLOTS: Record<StationId, [number, number]> = {
   nav: [1170, 300],
-  sumhuram: [910, 300],
-  ivory: [1170, 545],
+  ivory: [910, 300],
+  sumhuram: [1170, 545],
   turtles: [910, 545],
   clothing: [0, 0],
 }

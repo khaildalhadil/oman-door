@@ -23,8 +23,9 @@ R_PAV = 22.0
 STATIONS = [
     # id, angle (deg, Blender, CCW from +X), theme colour (sRGB)
     ("nav", 200.0, (0.12, 0.30, 0.55)),
-    ("sumhuram", 145.0, (0.55, 0.38, 0.22)),
-    ("ivory", 90.0, (0.15, 0.42, 0.25)),
+    # ivory = «سفن صنعت التاريخ» (station 2, next to the first one); sumhuram is station 3
+    ("ivory", 145.0, (0.15, 0.42, 0.25)),
+    ("sumhuram", 90.0, (0.55, 0.38, 0.22)),
     ("turtles", 35.0, (0.05, 0.50, 0.58)),
 ]
 BONUS_ANGLE = 270.0
@@ -406,9 +407,13 @@ def decorate(M, sid, W, col_local, statics):
             for sx in (-1, 1):
                 lib.sphere(bm, (sx * 1.5, -0.1, z), 0.04, 8, 5, mi=m('brass'), M=fr)
         lib.box(bm, (0, -0.1, 3.0), (3.0, 0.1, 0.35), mi=m('wood'), M=fr)
-        props.elephant(bm, W @ lib.T(-6.0, -2.0, 0.6) @ lib.Rz(rad(-25)), 1.6, {'body': m('ivory'), 'tusk': m('ivory')})
+        # «سفن صنعت التاريخ»: a dhow model on the plinth, with an anchor and a rope coil
+        props.dhow(bm, W @ lib.T(-6.0, -2.0, 1.05) @ lib.Rz(rad(-25)), 3.0,
+                   {'hull': m('wood'), 'deck': m('wood'), 'sail': m('sail'), 'rope': m('rope'), 'trim': m('brass'), 'wood': m('wdark')})
         lib.box(bm, (0, 0, 0.3), (2.6, 2.2, 0.6), mi=m('trim'), M=W @ lib.T(-6.0, -2.0, 0))
         col_local(-6.0, -2.0, 1.5, 3)
+        props.anchor(bm, W @ lib.T(3.6, -2.9, 0) @ lib.Rz(rad(20)), 1.0, m('iron'))
+        props.rope_coil(bm, W @ lib.T(-3.6, -2.8, 0), 1.6, m('rope'))
         props.chest(bm, W @ lib.T(5.0, -1.0, 0), 1.1, 0.6, 0.6, m('wdark'), m('brass'))
         props.chest(bm, W @ lib.T(5.1, -1.0, 0.6), 0.9, 0.5, 0.5, m('wood'), m('brass'))
         col_local(5.0, -1.0, 0.7, 1.2)

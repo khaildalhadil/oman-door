@@ -4,13 +4,18 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { create } from 'zustand'
 import { sfx } from '../game/sfx'
-import { STATIONS } from '../stations'
+import { STATION_ORDER, STATIONS } from '../stations'
 import { useStore } from '../store'
 import { ChoiceStep } from './Challenge'
 import { stopNarration } from './Narration'
 import { toAr } from './Quiz'
 
 const DEF = STATIONS.ivory
+const ORDINAL = ['الأولى', 'الثانية', 'الثالثة', 'الرابعة']
+const AT = STATION_ORDER.indexOf('ivory')
+const NEXT = STATION_ORDER[AT + 1]
+// the teacher's closing line of the captain's challenge (her recording plays later, with the stamp)
+const WIN = 'تهانينا! لقد اجتزتِ تحديات القبطان الثلاثة بنجاح، وأصبحتِ تستحقين ختم محطة «سفن صنعت التاريخ»!'
 
 interface ShipState {
   phase: 'sea' | 'cabin'
@@ -152,7 +157,7 @@ function CaptainChallenge() {
       </div>
       {won ? (
         <div className="treasure__win">
-          <p className="treasure__msg">{DEF.outro?.text ?? 'أحسنتِ!'}</p>
+          <p className="treasure__msg">{WIN}</p>
           <button className="btn btn--primary btn--xl" onClick={award}>
             افتحي جوازكِ 📘
           </button>
@@ -213,7 +218,7 @@ export function ShipStation() {
       {phase === 'sea' ? (
         !boarding && (
           <div className="ship-intro">
-            <span className="kicker">المحطة الثالثة</span>
+            <span className="kicker">المحطة {ORDINAL[AT]}</span>
             <h2>{DEF.title}</h2>
             <p>{DEF.intro}</p>
             <button className="btn btn--primary btn--xl" onClick={board}>
@@ -244,9 +249,9 @@ export function ShipStation() {
                 تحدي القبطان 🧭
               </button>
             )}
-            {stamped && (
+            {stamped && NEXT && (
               <button className="btn btn--primary" onClick={() => goTo('plaza', 'ivory')}>
-                التالي: المحطة الرابعة ←
+                التالي: {STATIONS[NEXT].short} ←
               </button>
             )}
             {back}

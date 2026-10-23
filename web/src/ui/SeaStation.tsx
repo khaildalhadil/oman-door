@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { create } from 'zustand'
 import { sfx } from '../game/sfx'
-import { STATIONS } from '../stations'
+import { STATION_ORDER, STATIONS } from '../stations'
 import { useStore } from '../store'
 import { ChoiceStep, OrderStep } from './Challenge'
 import { Narration, stopNarration } from './Narration'
@@ -214,7 +214,7 @@ export function SeaStation() {
             </button>
             {stamped && (
               <button className="btn btn--primary" onClick={() => goTo('plaza', 'nav')}>
-                التالي: المحطة الثانية ←
+                التالي: {STATIONS[STATION_ORDER[STATION_ORDER.indexOf('nav') + 1]].short} ←
               </button>
             )}
             <button className="btn btn--ghost btn--sm" onClick={() => goTo('plaza', 'nav')}>
