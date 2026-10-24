@@ -27,6 +27,7 @@ import { activityNav, StationActivity } from './Activities'
 import { portalMaterial } from './PlazaScene'
 import { narrate } from '../ui/Narration'
 import { player, Player } from './Player'
+import { SumhuramPort } from './SumhuramPort'
 
 const INDOOR: StationId[] = ['nav', 'ivory', 'clothing']
 
@@ -275,7 +276,7 @@ export function StationScene({ id }: { id: StationId }) {
     if (def.riddle && !pr.riddle && !st.stamps[id]) setNav(null)
     else if (unseen) setNav(unseen.pos, unseen.title)
     else if (!pr.activity && activityNav.target) setNav(activityNav.target, activityNav.label)
-    else if (!pr.quizDone) setNav(null)
+    else if (!pr.quizDone) setNav(activityNav.quest, activityNav.questLabel)
     else setNav(exit, 'العودة إلى الساحة')
     if (st.busy || modalOpen()) return
     // exit portal
@@ -336,6 +337,7 @@ export function StationScene({ id }: { id: StationId }) {
         <div className="exit-marker">↩ الساحة</div>
       </Html>
       <StationActivity id={id} scene={scene} nodes={nodes} empties={empties} world={world} controls={ref} />
+      {id === 'sumhuram' && <SumhuramPort empties={empties} world={world} />}
     </>
   )
 }

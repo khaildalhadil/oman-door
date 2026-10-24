@@ -56,6 +56,8 @@ export const PROMPTS: Record<string, { icon: string; label: string; verb: string
   mirror: { icon: '🪞', label: 'المرآة', verb: 'لفتح خزانة مريم' },
   scroll: { icon: '📜', label: 'اجمعي', verb: 'لجمع المخطوطة' },
   piece: { icon: '👘', label: 'ما اسمها؟', verb: 'لمعرفة اسم القطعة' },
+  tv: { icon: '📺', label: 'النشرة', verb: 'لمشاهدة نشرة «أصداء سمهرم»' },
+  relic: { icon: '🗝️', label: 'افتحي', verb: 'لفتح صندوق أسرار سمهرم' },
 }
 
 export function ActionButtons() {

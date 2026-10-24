@@ -12,7 +12,8 @@ import { worldPos, type V3 } from './helpers'
 import { player } from './Player'
 
 /** Objective marker published by the running activity (read by StationScene). */
-export const activityNav = { target: null as THREE.Vector3 | null, label: '' }
+// target: the activity's next spot; quest: what comes after the activity, before the stamp (e.g. Sumhuram's TV and box)
+export const activityNav = { target: null as THREE.Vector3 | null, label: '', quest: null as THREE.Vector3 | null, questLabel: '' }
 
 interface Props {
   id: StationId
@@ -38,7 +39,7 @@ const xzDist = (a: THREE.Vector3 | V3, b: THREE.Vector3) => {
 }
 
 /** Show an interaction prompt while the player is inside `active`; returns true when E / the button is pressed. */
-function usePromptZone(key: string) {
+export function usePromptZone(key: string) {
   return (active: boolean) => {
     const st = useStore.getState()
     if (active) {

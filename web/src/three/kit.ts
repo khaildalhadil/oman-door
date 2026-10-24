@@ -178,3 +178,101 @@ export function dispose(o: THREE.Object3D) {
     }
   })
 }
+
+/* ------------------------------------------------- shared ship (ships station, Sumhuram port) */
+
+export const std = (color: THREE.ColorRepresentation, o: THREE.MeshStandardMaterialParameters = {}) => new THREE.MeshStandardMaterial({ color, roughness: 0.85, ...o })
+export function add<G extends THREE.BufferGeometry, M extends THREE.Material>(parent: THREE.Object3D, geo: G, mat: M, x = 0, y = 0, z = 0) {
+  const m = new THREE.Mesh(geo, mat)
+  m.position.set(x, y, z)
+  m.castShadow = m.receiveShadow = true
+  parent.add(m)
+  return m
+}
+export const box = (p: THREE.Object3D, w: number, h: number, d: number, mat: THREE.Material, x: number, y: number, z: number) => add(p, new THREE.BoxGeometry(w, h, d), mat, x, y, z)
+export const cyl = (p: THREE.Object3D, r1: number, r2: number, h: number, mat: THREE.Material, x: number, y: number, z: number, seg = 14) =>
+  add(p, new THREE.CylinderGeometry(r1, r2, h, seg), mat, x, y, z)
+
+/** a lateen sail: triangle A (tack) - B (peak) - C (clew), billowed out along +z */
+function sailGeometry(A: THREE.Vector2, B: THREE.Vector2, C: THREE.Vector2, bulge: number, n = 14) {
+  const pos: number[] = []
+  const idx: number[] = []
+  const id = (i: number, j: number) => (i * (2 * n + 3 - i)) / 2 + j
+  for (let i = 0; i <= n; i++)
+    for (let j = 0; j <= n - i; j++) {
+      const u = i / n, v = j / n
+      pos.push(A.x + (B.x - A.x) * u + (C.x - A.x) * v, A.y + (B.y - A.y) * u + (C.y - A.y) * v, 27 * bulge * u * v * (1 - u - v))
+    }
+  for (let i = 0; i < n; i++)
+    for (let j = 0; j < n - i; j++) {
+      idx.push(id(i, j), id(i + 1, j), id(i, j + 1))
+      if (j < n - i - 1) idx.push(id(i + 1, j), id(i + 1, j + 1), id(i, j + 1))
+    }
+  const g = new THREE.BufferGeometry()
+  g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3))
+  g.setIndex(idx)
+  g.computeVertexNormals()
+  return g
+}
+
+/** an Omani baghlah: long raked bow, tall square carved stern, two masts with lateen sails (bow = +x, ~2.2 units long) */
+export function makeBaghlah() {
+  const ship = new THREE.Group()
+  const wood = tex(512, 512, drawWood)
+  const M = {
+    hull: std(0x9a6a3e, { map: wood }),
+    dark: std(0x5a3a22, { map: wood }),
+    deck: std(0xc9a578, { map: wood }),
+    sail: std(0xf3ead6, { side: THREE.DoubleSide, roughness: 0.95 }),
+    rope: new THREE.LineBasicMaterial({ color: 0x3b2a1a }),
+    glass: std(0xf6d58c, { emissive: 0xffb050, emissiveIntensity: 0.4 }),
+    red: std(0x8e2f1f),
+  }
+  const sh = new THREE.Shape()
+  sh.moveTo(-1.0, -0.26); sh.lineTo(-1.0, 0.26); sh.quadraticCurveTo(-0.7, 0.33, -0.2, 0.33); sh.lineTo(0.35, 0.31)
+  sh.quadraticCurveTo(0.9, 0.2, 1.18, 0); sh.quadraticCurveTo(0.9, -0.2, 0.35, -0.31); sh.lineTo(-0.2, -0.33); sh.quadraticCurveTo(-0.7, -0.33, -1.0, -0.26)
+  const hg = new THREE.ExtrudeGeometry(sh, { depth: 0.34, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2, curveSegments: 18, steps: 4 })
+  hg.rotateX(-Math.PI / 2)
+  const p = hg.attributes.position
+  for (let k = 0; k < p.count; k++) {
+    const x = p.getX(k), y = p.getY(k)
+    if (y < 0.14) p.setZ(k, p.getZ(k) * (0.3 + y * 5)) // V-shaped keel
+    // sheer line: the bow and the stern rise
+    p.setY(k, y + (y / 0.34) * (Math.max(0, x - 0.55) * 0.25 + Math.max(0, -0.6 - x) * 0.3))
+  }
+  hg.computeVertexNormals()
+  add(ship, hg, M.hull, 0, -0.12, 0)
+  box(ship, 1.9, 0.03, 0.02, M.red, 0.05, 0.09, 0.335).rotation.y = 0.02
+  box(ship, 1.9, 0.03, 0.02, M.red, 0.05, 0.09, -0.335).rotation.y = -0.02
+  const deck = new THREE.Shape(sh.getPoints(24).map((v) => new THREE.Vector2(v.x * 0.97, v.y * 0.9)))
+  const dg = new THREE.ShapeGeometry(deck)
+  dg.rotateX(-Math.PI / 2)
+  add(ship, dg, M.deck, 0, 0.215, 0)
+  // stern castle with a carved, windowed transom
+  box(ship, 0.42, 0.16, 0.56, M.dark, -0.82, 0.3, 0)
+  box(ship, 0.03, 0.3, 0.58, M.hull, -1.03, 0.26, 0)
+  for (const z of [-0.18, -0.06, 0.06, 0.18]) box(ship, 0.012, 0.07, 0.07, M.glass, -1.05, 0.3, z)
+  box(ship, 0.014, 0.025, 0.56, M.red, -1.045, 0.4, 0)
+  // long projecting stem
+  cyl(ship, 0.012, 0.02, 0.5, M.dark, 1.28, 0.33, 0).rotation.z = -0.95
+  // masts, yards and lateen sails
+  const masts: [number, number, number, THREE.Vector2, THREE.Vector2, THREE.Vector2][] = [
+    [0.22, 1.55, -0.12, new THREE.Vector2(0.98, 0.42), new THREE.Vector2(-0.62, 1.62), new THREE.Vector2(-0.36, 0.32)],
+    [-0.55, 1.05, -0.1, new THREE.Vector2(-0.2, 0.42), new THREE.Vector2(-1.1, 1.14), new THREE.Vector2(-0.98, 0.36)],
+  ]
+  const ropes: THREE.Vector3[] = []
+  for (const [x, h, rake, A, B, C] of masts) {
+    const m = cyl(ship, 0.014, 0.022, h, M.dark, x, 0.2 + h / 2, 0, 10)
+    m.rotation.z = rake
+    const yard = cyl(ship, 0.008, 0.01, A.distanceTo(B), M.dark, (A.x + B.x) / 2, (A.y + B.y) / 2, 0.035, 8)
+    yard.rotation.z = Math.atan2(B.y - A.y, B.x - A.x) - Math.PI / 2
+    add(ship, sailGeometry(A, B, C, 0.09), M.sail, 0, 0, 0.04)
+    const top = new THREE.Vector3(x - Math.sin(rake) * h * -1, 0.2 + h, 0)
+    ropes.push(top, new THREE.Vector3(1.15, 0.3, 0), top, new THREE.Vector3(x - 0.15, 0.24, 0.3), top, new THREE.Vector3(x - 0.15, 0.24, -0.3))
+    ropes.push(new THREE.Vector3(C.x, C.y, 0.04), new THREE.Vector3(C.x - 0.1, 0.24, 0.2))
+  }
+  ship.add(new THREE.LineSegments(new THREE.BufferGeometry().setFromPoints(ropes), M.rope))
+  // deck cargo: a few chests and sacks
+  for (const [x, z] of [[0.55, 0.12], [0.62, -0.1], [-0.2, 0.15]] as const) box(ship, 0.1, 0.07, 0.08, M.dark, x, 0.25, z)
+  return ship
+}

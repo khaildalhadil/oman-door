@@ -8,6 +8,7 @@ import { IvoryRoute } from './Challenge'
 import { Narration } from './Narration'
 import { StationIcon } from './Passport'
 import { toAr } from './Quiz'
+import { NEWS, SumhuramBox, SumhuramTV, tvKey } from './Sumhuram'
 
 export const isStation = (s: string): s is StationId => (STATION_ORDER as string[]).includes(s)
 
@@ -85,7 +86,16 @@ export function StationMission({ id }: { id: StationId }) {
     done: itemsDone,
   })
   steps.push({ label: `النشاط: ${def.activityTitle}`, hint: def.activityHint, done: pr.activity })
-  steps.push({ label: 'تحدي المستكشف 🗝️ ثم الختم', hint: 'اضغطي «ابدئي تحدي المستكشف» ⭐', done: pr.quizDone || stamped })
+  const box = id === 'sumhuram'
+  if (box) {
+    const n = NEWS.filter((x) => pr.seen.includes(tvKey(x.key))).length
+    steps.push({
+      label: `نشرة «أصداء سمهرم» (${toAr(n)}/${toAr(NEWS.length)})`,
+      hint: 'اخرجي من البوابة الجنوبية إلى الميناء، وشاهدي الأخبار على شاشة التلفاز 📺',
+      done: n === NEWS.length,
+    })
+    steps.push({ label: 'صندوق أسرار سمهرم 🗝️ ثم الختم', hint: 'عودي إلى الحفريات وافتحي الصندوق الأثري 🗝️', done: pr.quizDone || stamped })
+  } else steps.push({ label: 'تحدي المستكشف 🗝️ ثم الختم', hint: 'اضغطي «ابدئي تحدي المستكشف» ⭐', done: pr.quizDone || stamped })
   const nowIdx = steps.findIndex((st) => !st.done)
   const now = nowIdx < 0 ? steps.length : nowIdx
   const ready = steps.slice(0, -1).every((st) => st.done)
@@ -126,8 +136,12 @@ export function StationMission({ id }: { id: StationId }) {
             🔍 حلّي اللغز
           </button>
         ) : !stamped ? (
-          <button className="btn btn--primary btn--sm" disabled={!ready} onClick={() => setStationQuiz(id)}>
-            {ready ? 'ابدئي تحدي المستكشف 🗝️' : '🔒 تحدي المستكشف'}
+          <button
+            className="btn btn--primary btn--sm"
+            disabled={!ready}
+            onClick={() => (box ? useStore.getState().setActivity('sumhuram_box') : setStationQuiz(id))}
+          >
+            {box ? (ready ? 'افتحي صندوق الأسرار 🗝️' : '🔒 صندوق الأسرار') : ready ? 'ابدئي تحدي المستكشف 🗝️' : '🔒 تحدي المستكشف'}
           </button>
         ) : (
           <span className="stamp-ok">✓ حصلتِ على ختم المحطة</span>
@@ -292,6 +306,8 @@ export function ActivityModals() {
   const activity = useStore((s) => s.activity)
   if (!activity) return null
   if (activity === 'trade') return <IvoryRoute />
+  if (activity === 'sumhuram_tv') return <SumhuramTV />
+  if (activity === 'sumhuram_box') return <SumhuramBox />
   if (activity === 'wardrobe') return <Wardrobe />
   if (activity.startsWith('piece:')) return <NameGame pieceKey={activity.slice(6)} />
   return null

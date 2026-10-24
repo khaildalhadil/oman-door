@@ -51,6 +51,16 @@ button {
   touch-action: none;
 }
 
+/* drei <Html center> labels: in an rtl page the label hangs to the left of its anchor by its own width,
+   so lay the label wrappers out ltr and keep the labels themselves rtl */
+.canvas > div {
+  direction: ltr;
+}
+
+.canvas > div > div {
+  direction: rtl;
+}
+
 /* ------------------------------------------------------------ shared bits */
 
 .kicker {

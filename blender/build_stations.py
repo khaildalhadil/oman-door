@@ -550,29 +550,83 @@ def build_sumhuram():
         lib.cyl(bm, sx, 0, -1.6, 2.6, 0.08, 0.08, segs=6, M=lib.T(4.0, 18.8, 1.6) @ lib.Rz(math.pi))
     multi("name_posts", bm, [M['wdark']], statics)
     lib.col_circle(4.0, 18.8, 1.3, 3)
+    # «ميناء سمهرم»: stone quay south of the city with a wooden jetty, cargo and dhows at sea
+    QY, JX0, JX1, JY = -24.0, 4.6, 7.4, -36.0
+    lib.box_mm(kit.bm('stone'), -26, 17, QY - 0.35, QY, -2.6, 0.04)
+    for k in range(29):
+        x = -25.25 + k * 1.5
+        lib.box(kit.bm('stone'), (x, QY + 0.35, -0.02), (1.44, 0.7, 0.12))
+    lib.box_mm(kit.bm('paving'), -20, 16.5, QY + 0.7, -18.5, 0, 0.03)
+    for k in range(int((QY - JY) / 0.3)):
+        lib.box(kit.bm('wood'), ((JX0 + JX1) / 2, QY - 0.15 - k * 0.3, 0.05), (JX1 - JX0, 0.26, 0.1))
+    for x in (JX0 + 0.2, JX1 - 0.2):
+        lib.box_mm(kit.bm('wdark'), x - 0.1, x + 0.1, JY, QY, -0.25, 0.0)
+    for y in (QY - 1.0, QY - 4.0, QY - 7.0, QY - 10.0, JY + 0.15):
+        for x in (JX0 - 0.05, JX1 + 0.05):
+            lib.cyl(kit.bm('wdark'), x, y, -2.5, 3.2, 0.13, segs=8)
+            lib.col_circle(x, y, 0.16, 1.0)
+    for x in (JX0 - 0.05, JX1 + 0.05):
+        lib.box_mm(kit.bm('rope'), x - 0.025, x + 0.025, JY + 0.15, QY - 1.0, 0.5, 0.55)
+    lib.col_box(JX0, JX1, JY, QY, 0.1)
+    for x in (-18.0, -10.0, 1.0, 11.0, 15.0):
+        lib.cyl(kit.bm('wdark'), x, QY + 0.4, 0, 0.55, 0.16, 0.13, segs=10)
+        props.rope_coil(kit.bm('rope'), lib.T(x + 0.55, QY + 0.8, 0), 1.0, 0)
+        lib.col_circle(x, QY + 0.4, 0.2, 0.6)
+    for (x, y, s_) in ((10.2, -20.2, 1.0), (10.8, -19.9, 0.9), (10.5, -20.8, 1.05), (11.3, -20.6, 0.85),
+                       (-9.6, -20.4, 1.0), (-9.0, -20.1, 0.9), (-9.3, -21.0, 0.95)):
+        props.amphora(kit.bm('clay'), lib.T(x, y, 0), s_, 0)
+    for (x, y, s_) in ((12.6, -20.2, 1.0), (13.2, -20.5, 0.9), (12.9, -19.6, 0.95), (13.6, -19.9, 1.05),
+                       (-7.6, -20.3, 1.0), (-7.0, -20.8, 0.9)):
+        props.sack(kit.bm('weave'), lib.T(x, y, 0), s_, 0)
+    lib.col_box(9.7, 14.0, -21.3, -19.3, 1.0)
+    lib.col_box(-10.1, -6.6, -21.4, -19.6, 1.0)
+    bmx = bmesh.new()
+    props.chest(bmx, lib.T(13.4, -21.9, 0) @ lib.Rz(0.2), 1.0, 0.6, 0.6, 0, 1)
+    props.barrel(bmx, lib.T(9.6, -22.0, 0), 1.0, 0, 2)
+    props.barrel(bmx, lib.T(9.0, -22.7, 0), 0.9, 0, 2)
+    props.anchor(bmx, lib.T(-8.4, -22.5, 0) @ lib.Rz(0.4), 1.0, 2)
+    multi("port_cargo", bmx, [M['wood'], M['brass'], M['iron']], statics, uv=0.8)
+    for (x, y) in ((13.4, -21.9), (9.6, -22.0), (9.0, -22.7), (-8.4, -22.5)):
+        lib.col_circle(x, y, 0.5, 1.0)
+    bmd = bmesh.new()
+    dm = {'hull': 0, 'deck': 0, 'sail': 1, 'rope': 2, 'trim': 3, 'wood': 0}
+    # (the two moored at the jetty are the web app's baghlahs, three/SumhuramPort.tsx)
+    for (x, y, L, a) in ((-30.0, -75.0, 12.0, 20), (42.0, -12.0, 10.0, 80)):
+        props.dhow(bmd, lib.T(x, y, -1.0 + L * 0.06) @ lib.Rz(rad(a)), L, dm)
+    multi("port_dhows", bmd, [M['wood'], M['sail'], M['rope'], M['brass']], statics, uv=0.8)
+    # the sea is out of bounds: only the quay and the jetty are walkable
+    lib.col_box(-40, JX0, -80, QY, 6)
+    lib.col_box(JX1, 40, -80, QY, 6)
+    lib.col_box(JX0, JX1, -80, JY, 6)
+    # the news TV «أصداء سمهرم» (drawn by the web app) on the quay, facing the city's south gate
+    lib.empty("TV", (-2.0, -19.6, 0), size=0.6)
+    lib.col_box(-3.35, -0.65, -20.1, -19.1, 3.0)
+    # «صندوق أسرار سمهرم» appears here, beside the excavations, after the newscast
+    lib.empty("Box", (-0.6, -2.2, 0), size=0.5)
     kit.emit("ruins", statics, uv_tile=2.2)
-    # ground plateau + lagoon (khor) to the east and the sea to the south
+    # ground plateau ending at the quay, the lagoon (khor) to the east and the sea to the south
     bm = bmesh.new()
-    lib.box_mm(bm, -40, 17, -40, 40, -3.0, 0.0)
+    lib.box_mm(bm, -40, 17, -24, 40, -3.0, 0.0)
     pl = lib.mesh_obj("plateau", bm, [M['sand']])
     lib.finalize(pl, 35)
     lib.uv_box(pl, 6)
     statics.append(pl)
     bm = bmesh.new()
-    for k in range(40):
-        y = -40 + k * 2.05
+    for k in range(32):
+        y = -24 + k * 2.05
         lib.ico(bm, (17.4 + rnd.uniform(-0.3, 0.4), y, -1.4), rnd.uniform(1.0, 1.6), 1, scale=(0.9, 1.1, 1.0))
     multi("cliff", bm, [M['rock']], statics, uv=3)
     bm = bmesh.new()
-    lib.box_mm(bm, 17, 600, -600, 600, -1.62, -1.6)
+    lib.box_mm(bm, -600, 600, -600, 600, -1.02, -1.0)
     w = lib.mesh_obj("Water_Khor", bm, [M['water']])
     lib.uv_box(w, 6)
     lib.col_box(16.8, 40, -40, 40, 6)
     scenery.terrain("Terrain", (M['sand'], M['rock']), seed=33, dune_h=3, size=900, res=150, flat_r=(42, 90),
                     corridor=(0, 1), flat_boxes=[(-45, 20, -45, 45, 20)], mtn_r=(140, 260), mtn_h=(40, 120),
-                    mtn_bias=lambda a: np.clip(0.3 + np.sin(a) * 0.8, 0.0, 1.0))
+                    mtn_bias=lambda a: np.clip(0.3 + np.sin(a) * 0.8, 0.0, 1.0),
+                    sea_fn=lambda X, Y: 1 - (1 - scenery.sstep(-21, -24, Y)) * (1 - scenery.sstep(14, 18, X)))
     exit_portal(M, statics, -6.0, 26.0, 0.0)
-    finish("sumhuram", statics, dict(x0=-26, x1=16.5, z0=-30, z1=14), dict(x=0, z=-22.0, yaw=0.0))
+    finish("sumhuram", statics, dict(x0=-26, x1=16.5, z0=-30, z1=36.5), dict(x=0, z=-22.0, yaw=0.0))
 
 
 # ============================================================= 3. turtles

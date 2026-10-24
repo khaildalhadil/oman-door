@@ -23,11 +23,13 @@ const emptyProgress = (): Record<StationId, StationProgress> =>
 
 const JKEY = 'oman3d.journey.v1'
 // a station that was rebuilt drops what was saved for its old version, once:
-// v2 nav became the manuscripts room + treasure chest; v3 ivory (ivory trade) became «سفن صنعت التاريخ»
-const NAV_V = 3
+// v2 nav became the manuscripts room + treasure chest; v3 ivory (ivory trade) became «سفن صنعت التاريخ»;
+// v4 sumhuram got the port, the news TV and «صندوق أسرار سمهرم»
+const NAV_V = 4
 const REBUILT: [StationId, number][] = [
   ['nav', 2],
   ['ivory', 3],
+  ['sumhuram', 4],
 ]
 function loadJourney() {
   try {

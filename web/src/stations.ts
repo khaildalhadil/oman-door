@@ -46,7 +46,7 @@ export interface Riddle {
 export type ChallengeStep =
   | { kind: 'order'; title?: string; prompt: string; items: string[] /* correct order */; success: string }
   | { kind: 'match'; prompt: string; pairs: [string, string][]; success: string }
-  | { kind: 'choice'; title?: string; image?: string; prompt: string; options: string[]; answer: number; success: string }
+  | { kind: 'choice'; title?: string; image?: string; prompt: string; options: string[]; answer: number; success: string; ref?: string }
   | { kind: 'multi'; prompt: string; options: string[]; answers: number[]; success: string }
   | { kind: 'tf'; questions: TFQuestion[] }
 
@@ -235,13 +235,34 @@ export const STATIONS: Record<StationId, StationDef> = {
       { key: 'art_4', icon: '📜', title: 'نقش قديم', text: 'من المكتشفات نقوش ساعدت الباحثين على التعرف إلى تاريخ المدينة وسكانها.' },
       { key: 'art_5', icon: '🔥', title: 'مبخرة', text: 'أداة يُحرق فيها اللبان، وما زال البخور جزءًا من التراث العُماني حتى اليوم.' },
     ],
+    // «صندوق أسرار سمهرم»: one question per artifact in the box (three/SumhuramPort.tsx + ui/Sumhuram.tsx)
     challenge: [
       {
         kind: 'choice',
-        prompt: 'اختاري مفتاح المدينة 🔑 أي اكتشاف يساعدنا أكثر على فهم الدور التجاري لسمهرم؟',
-        options: ['غرف التخزين واللبان', 'المقبرة', 'الأبراج فقط'],
-        answer: 0,
-        success: 'أحسنتِ! اكتشفتِ أن سمهرم كانت مدينة ارتبطت بالتجارة وتخزين السلع واللبان.',
+        title: 'الخريطة المفقودة',
+        prompt: 'أين تقع مدينة سمهرم الأثرية؟',
+        options: ['ولاية صور بمحافظة جنوب الشرقية', 'خور روري بولاية طاقة بمحافظة ظفار', 'ولاية صحار بمحافظة شمال الباطنة'],
+        answer: 1,
+        success: 'أحسنتِ! تقع سمهرم في خور روري بولاية طاقة بمحافظة ظفار ✨',
+        ref: 'الموسوعة العُمانية، المجلد الخامس، ص 1880–1882.',
+      },
+      {
+        kind: 'choice',
+        title: 'الجرة الغامضة',
+        prompt: 'ما السلعة الثمينة التي اشتهر ميناء سمهرم بتصديرها؟',
+        options: ['اللؤلؤ', 'النحاس', 'اللبان'],
+        answer: 2,
+        success: 'أحسنتِ! اشتهر ميناء سمهرم بتصدير اللبان العُماني ✨',
+        ref: 'الموسوعة العُمانية، المجلد الثامن، ص 3048.',
+      },
+      {
+        kind: 'choice',
+        title: 'سر البوابة',
+        prompt: 'كم بابًا كان يضم المدخل الرئيس لمدينة سمهرم القديمة؟',
+        options: ['بابين', 'ثلاثة أبواب', 'خمسة أبواب'],
+        answer: 1,
+        success: 'أحسنتِ! كان المدخل الرئيس لمدينة سمهرم يضم ثلاثة أبواب ✨',
+        ref: 'الموسوعة العُمانية، المجلد الخامس، ص 1880–1882.',
       },
     ],
     fact: {
@@ -251,6 +272,10 @@ export const STATIONS: Record<StationId, StationDef> = {
       ],
     },
     ref: 'الموسوعة العُمانية، مادة «سمهرم / خور روري».',
+    outro: {
+      text: 'رائع أيتها المستكشفة! لقد كشفتِ أسرار مدينة سمهرم، وتتبّعتِ آثار التاريخ والتجارة البحرية العُمانية. تهانينا! حصلتِ على ختم «أصداء سمهرم»، واصلي رحلتكِ؛ فقد اقتربتِ من اكتشاف جميع أسرار البحر.',
+      audio: asset('audio/sumhuram/outro.m4a'),
+    },
   },
   turtles: {
     id: 'turtles',

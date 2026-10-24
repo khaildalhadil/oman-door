@@ -16,12 +16,13 @@ def sstep(e0, e1, x):
 
 
 def terrain(name, mats, size=1400.0, res=220, flat_r=(40, 95), corridor=(9, 28), seed=3,
-            dune_h=7.0, mtn_r=(230, 360), mtn_h=(45, 120), mtn_bias=None, flat_boxes=(), sea_y=None):
+            dune_h=7.0, mtn_r=(230, 360), mtn_h=(45, 120), mtn_bias=None, flat_boxes=(), sea_y=None, sea_fn=None):
     """Sand terrain that is flat near the origin and rises into rocky mountains far away.
 
     mats = (sand, rock). `corridor` keeps a flat strip along the Y axis for the road.
     `mtn_bias(angle) -> factor` scales mountain height by direction.
     `flat_boxes` = [(x0, x1, y0, y1, margin)] extra flattened areas.
+    `sea_fn(X, Y) -> 0..1` sinks the land below the water where it is 1 (any coastline shape).
     """
     n = res + 1
     lin = np.linspace(-size / 2, size / 2, n, dtype=np.float32)
@@ -59,6 +60,8 @@ def terrain(name, mats, size=1400.0, res=220, flat_r=(40, 95), corridor=(9, 28),
     if sea_y is not None:
         # coastline: the land slopes down below the water north of sea_y
         h = h - sstep(sea_y, sea_y + 35, Y) * (h + 4.0)
+    if sea_fn is not None:
+        h = h - sea_fn(X, Y) * (h + 4.0)
     bm = bmesh.new()
     verts = [[bm.verts.new((float(X[j, i]), float(Y[j, i]), float(h[j, i]))) for i in range(n)] for j in range(n)]
     for j in range(res):
