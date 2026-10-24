@@ -38,30 +38,69 @@ const clock = (s: number) => {
   return `${toAr(Math.floor(s / 60))}:${sec < 10 ? '٠' : ''}${toAr(sec)}`
 }
 
+/** a recording with play/pause and a seek bar (podcast episodes, reef treasure cards) */
+export function AudioBar({ src, onEnded }: { src: string; onEnded: () => void }) {
+  const audio = useRef<HTMLAudioElement>(null)
+  const [playing, setPlaying] = useState(false)
+  const [t, setT] = useState(0)
+  const [dur, setDur] = useState(0)
+  const toggle = () => {
+    const a = audio.current
+    if (!a) return
+    if (a.paused) a.play().catch(() => {})
+    else a.pause()
+  }
+  return (
+    <>
+      <audio
+        ref={audio}
+        src={src}
+        autoPlay
+        onPlay={() => setPlaying(true)}
+        onPause={() => setPlaying(false)}
+        onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
+        onLoadedMetadata={(e) => setDur(e.currentTarget.duration)}
+        onEnded={() => {
+          setPlaying(false)
+          onEnded()
+        }}
+      />
+      <div className="podcast__player">
+        <button className="podcast__play" onClick={toggle} aria-label={playing ? 'إيقاف' : 'تشغيل'}>
+          {playing ? '⏸' : '▶'}
+        </button>
+        <input
+          className="podcast__bar"
+          type="range"
+          min={0}
+          max={dur || 1}
+          step={0.1}
+          value={t}
+          onChange={(e) => audio.current && (audio.current.currentTime = Number(e.target.value))}
+          aria-label="شريط التقدم"
+          style={{ ['--p' as string]: `${dur ? (t / dur) * 100 : 0}%` }}
+        />
+        <span className="podcast__time" dir="ltr">
+          {clock(t)} / {clock(dur)}
+        </span>
+      </div>
+    </>
+  )
+}
+
 function Episode({ itemKey }: { itemKey: string }) {
   const i = DEF.items.findIndex((x) => x.key === itemKey)
   const it = DEF.items[i]
   const close = () => useShip.getState().setOpen(null)
   const seen = useStore((s) => s.progress.ivory.seen.includes(itemKey))
-  const audio = useRef<HTMLAudioElement>(null)
-  const [playing, setPlaying] = useState(false)
-  const [t, setT] = useState(0)
-  const [dur, setDur] = useState(0)
   useEffect(() => stopNarration(), [itemKey])
   const done = () => {
-    setPlaying(false)
     const st = useStore.getState()
     if (st.progress.ivory.seen.includes(it.key)) return
     st.markSeen('ivory', it.key)
     sfx.ding()
     const n = useStore.getState().progress.ivory.seen.length
     st.showToast(n >= DEF.items.length ? 'أحسنتِ! استمعتِ إلى الحلقات الثلاث، وتحدي القبطان بانتظاركِ 🧭' : `أحسنتِ! أنهيتِ حلقة «${it.title}» ✓`)
-  }
-  const toggle = () => {
-    const a = audio.current
-    if (!a) return
-    if (a.paused) a.play().catch(() => {})
-    else a.pause()
   }
   return createPortal(
     <div className="modal" onClick={close} role="dialog" aria-modal aria-label={it.title}>
@@ -79,35 +118,7 @@ function Episode({ itemKey }: { itemKey: string }) {
             ✕
           </button>
         </div>
-        <audio
-          ref={audio}
-          src={it.audio}
-          autoPlay
-          onPlay={() => setPlaying(true)}
-          onPause={() => setPlaying(false)}
-          onTimeUpdate={(e) => setT(e.currentTarget.currentTime)}
-          onLoadedMetadata={(e) => setDur(e.currentTarget.duration)}
-          onEnded={done}
-        />
-        <div className="podcast__player">
-          <button className="podcast__play" onClick={toggle} aria-label={playing ? 'إيقاف' : 'تشغيل'}>
-            {playing ? '⏸' : '▶'}
-          </button>
-          <input
-            className="podcast__bar"
-            type="range"
-            min={0}
-            max={dur || 1}
-            step={0.1}
-            value={t}
-            onChange={(e) => audio.current && (audio.current.currentTime = Number(e.target.value))}
-            aria-label="شريط التقدم"
-            style={{ ['--p' as string]: `${dur ? (t / dur) * 100 : 0}%` }}
-          />
-          <span className="podcast__time" dir="ltr">
-            {clock(t)} / {clock(dur)}
-          </span>
-        </div>
+        {it.audio && <AudioBar src={it.audio} onEnded={done} />}
         <p className="nav-scroll__text">{it.text}</p>
         <p className="info__ref">📚 {it.ref ?? 'الموسوعة العُمانية — المجلد والصفحة: يُضافان قريبًا'}</p>
         {!seen && <p className="nav-scroll__hint">استمعي إلى الحلقة حتى النهاية لتُحتسب ✓</p>}

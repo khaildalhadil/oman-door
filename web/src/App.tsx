@@ -30,10 +30,12 @@ import { StationChallenge, StationRiddle } from './ui/Challenge'
 import { SeaStation } from './ui/SeaStation'
 import { ShipStation, useShip } from './ui/ShipStation'
 import { ShipScene } from './three/ShipScene'
+import { ReefScene } from './three/ReefScene'
+import { ReefStation } from './ui/ReefStation'
 
 const params = new URLSearchParams(window.location.search)
 const FX = params.get('fx') !== '0'
-const INDOOR = ['interior', 'nav', 'ivory', 'clothing']
+const INDOOR = ['interior', 'nav', 'ivory', 'clothing', 'turtles']
 
 function DevExpose() {
   const state = useThree()
@@ -52,7 +54,8 @@ function Experience() {
         {started && scene === 'plaza' && <PlazaScene key="plaza" />}
         {started && scene === 'nav' && <NavRoomScene key="nav" />}
         {started && scene === 'ivory' && <ShipScene key="ivory" />}
-        {started && isStation(scene) && scene !== 'nav' && scene !== 'ivory' && <StationScene key={scene} id={scene} />}
+        {started && scene === 'turtles' && <ReefScene key="turtles" />}
+        {started && isStation(scene) && scene !== 'nav' && scene !== 'ivory' && scene !== 'turtles' && <StationScene key={scene} id={scene} />}
         {started && scene === 'fort' && <FortScene key="fort" />}
         {started && scene === 'interior' && <InteriorScene key="interior" />}
       </Suspense>
@@ -99,6 +102,8 @@ export default function App() {
             <SeaStation />
           ) : scene === 'ivory' ? (
             <ShipStation />
+          ) : scene === 'turtles' ? (
+            <ReefStation />
           ) : (
             <>
               {scene === 'plaza' ? <PlazaMission /> : isStation(scene) ? <StationMission id={scene} /> : <Mission />}
