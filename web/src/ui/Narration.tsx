@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react'
+import { trackMedia } from '../game/sfx'
 import { useStore } from '../store'
 
 /** One shared narrator: a new recording stops the previous one. */
@@ -18,6 +19,7 @@ export function narrate(src: string | undefined) {
   stopNarration()
   if (!src || useStore.getState().muted) return
   const a = new Audio(src)
+  trackMedia(a)
   current = a
   a.onended = () => {
     if (current === a) current = null

@@ -396,7 +396,7 @@ export function NavRoomScene() {
       const v = chestView()
       flyTo(v.pos, v.target, 1.4)
     } else {
-      if (controls) look.current.copy(controls.target)
+      if (controls?.target) look.current.copy(controls.target)
       flyTo(SEAT.clone(), TARGET.clone(), 1.4, () => setReady(true))
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps

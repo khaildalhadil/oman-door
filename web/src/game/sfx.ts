@@ -4,6 +4,7 @@ let muted = false
 
 export function setMuted(m: boolean) {
   muted = m
+  ambLevel()
 }
 
 export function unlockAudio() {
@@ -13,6 +14,80 @@ export function unlockAudio() {
   } catch {
     ctx = null
   }
+  if (wanted && !amb) setAmbience(wanted)
+}
+
+/* ---- background ambience: one looping track (the sea), faded in and out, quieter under narration and videos */
+const AMB_VOL = 0.5
+let wanted: string | null = null
+interface Track {
+  url: string
+  gain: GainNode
+  src?: AudioBufferSourceNode
+}
+let amb: Track | null = null
+const buffers = new Map<string, Promise<AudioBuffer>>()
+const playing = new Set<HTMLMediaElement>()
+
+function ambLevel() {
+  if (!ctx || !amb) return
+  const talk = [...playing].some((m) => !m.paused && !m.ended && !m.muted)
+  amb.gain.gain.setTargetAtTime(muted ? 0 : talk ? AMB_VOL * 0.3 : AMB_VOL, ctx.currentTime, 0.5)
+}
+
+/** loop `url` behind the game (null = silence); the same url keeps playing across calls */
+export function setAmbience(url: string | null) {
+  wanted = url
+  if (amb?.url === url) return
+  const old = amb
+  amb = null
+  if (old && ctx) {
+    old.gain.gain.setTargetAtTime(0, ctx.currentTime, 0.4)
+    setTimeout(() => old.src?.stop(), 2500)
+  }
+  if (!url || !ctx) return
+  const c = ctx
+  const gain = c.createGain()
+  gain.gain.value = 0
+  gain.connect(c.destination)
+  const cur: Track = { url, gain }
+  amb = cur
+  let buf = buffers.get(url)
+  if (!buf) {
+    buf = fetch(url)
+      .then((r) => r.arrayBuffer())
+      .then((b) => c.decodeAudioData(b))
+    buffers.set(url, buf)
+  }
+  buf
+    .then((b) => {
+      if (amb !== cur) return
+      const src = c.createBufferSource()
+      src.buffer = b
+      src.loop = true
+      src.connect(gain)
+      src.start()
+      cur.src = src
+      ambLevel()
+    })
+    .catch(() => buffers.delete(url))
+}
+
+/** narration / podcast / video elements: the sea goes quiet while they play */
+export function trackMedia(m: HTMLMediaElement) {
+  for (const t of ['play', 'pause', 'ended']) m.addEventListener(t, onMedia)
+}
+function onMedia(e: Event) {
+  if (e.target instanceof HTMLMediaElement) playing.add(e.target)
+  ambLevel()
+}
+if (typeof document !== 'undefined') {
+  for (const t of ['play', 'pause', 'ended']) document.addEventListener(t, onMedia, true)
+  // a player closed while playing never reports back here: forget finished ones
+  setInterval(() => {
+    for (const m of playing) if (m.paused || m.ended) playing.delete(m)
+    ambLevel()
+  }, 1000)
 }
 
 function tone(freq: number, start: number, dur: number, type: OscillatorType = 'sine', gain = 0.18, slide = 0) {

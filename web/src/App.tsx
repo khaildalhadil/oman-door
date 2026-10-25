@@ -1,6 +1,8 @@
 import { Canvas, useThree } from '@react-three/fiber'
 import { PerformanceMonitor } from '@react-three/drei'
-import { Suspense } from 'react'
+import { Suspense, useEffect } from 'react'
+import { asset } from './content'
+import { setAmbience } from './game/sfx'
 import { useStore } from './store'
 import { GateScene } from './three/GateScene'
 import { FortScene } from './three/FortScene'
@@ -77,11 +79,20 @@ function StudioBanner() {
   )
 }
 
+// the teacher's recordings: waves and gulls at the first three stations, the deep sea at the fourth
+const AMBIENCE: Partial<Record<string, string>> = {
+  nav: asset('audio/ambience/beach.m4a'),
+  ivory: asset('audio/ambience/beach.m4a'),
+  sumhuram: asset('audio/ambience/beach.m4a'),
+  turtles: asset('audio/ambience/deep.m4a'),
+}
+
 export default function App() {
   const quality = useStore((s) => s.quality)
   const scene = useStore((s) => s.scene)
   const started = useStore((s) => s.started)
   const device = useStore((s) => s.device)
+  useEffect(() => setAmbience((started && AMBIENCE[scene]) || null), [scene, started])
   return (
     <div className={`app scene-${scene} device-${device}`}>
       <Canvas

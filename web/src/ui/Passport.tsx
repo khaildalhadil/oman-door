@@ -467,8 +467,10 @@ export function StampAward() {
   const portrait = useMemo(() => asset('images/maryam.png'), [])
   useEffect(() => {
     if (!award) return
-    if (award === 'final') sfx.win()
-    else {
+    if (award === 'final') {
+      sfx.win()
+      setTimeout(() => narrate(JOURNEY.finalAudio), 1200)
+    } else {
       setTimeout(() => sfx.stamp(), 650)
       setTimeout(() => sfx.correct(), 900)
       // the station's closing words («أحسنتِ… انتقلي إلى المحطة التالية») once the stamp lands
