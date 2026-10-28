@@ -10,7 +10,7 @@
 
 النماذج مبنية بالكامل في **Blender 5.2** عبر سكربتات Python، والعرض بتقنية **React Three Fiber** (three.js).
 
-- **العب الآن:** https://khaildalhadil.github.io/oman-sea-story/
+- **العب الآن:** https://oman-sea-story.vercel.app (أو https://khaildalhadil.github.io/oman-sea-story/)
 - **الفيديو التوضيحي:** في صفحة [Releases](https://github.com/khaildalhadil/oman-sea-story/releases).
 - **وصف توظيف اللعبة في المنهج:** `docs/وصف-توظيف-اللعبة-في-المنهج.docx`
 
