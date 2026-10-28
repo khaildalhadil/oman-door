@@ -10,8 +10,8 @@
 
 النماذج مبنية بالكامل في **Blender 5.2** عبر سكربتات Python، والعرض بتقنية **React Three Fiber** (three.js).
 
-- **العب الآن:** https://khaildalhadil.github.io/oman-door/
-- **الفيديو التوضيحي:** في صفحة [Releases](https://github.com/khaildalhadil/oman-door/releases).
+- **العب الآن:** https://khaildalhadil.github.io/oman-sea-story/
+- **الفيديو التوضيحي:** في صفحة [Releases](https://github.com/khaildalhadil/oman-sea-story/releases).
 - **وصف توظيف اللعبة في المنهج:** `docs/وصف-توظيف-اللعبة-في-المنهج.docx`
 
 كل دفع (push) إلى الفرع `main` يبني اللعبة وينشرها تلقائياً على GitHub Pages عبر `.github/workflows/deploy.yml`.
@@ -55,7 +55,7 @@ npm run dev
 
 ## استوديو التحديات (للطالبات)
 
-**الرابط:** https://khaildalhadil.github.io/oman-door/studio.html (ويوجد رابط له أيضاً في «لوحة المعلم»).
+**الرابط:** https://khaildalhadil.github.io/oman-sea-story/studio.html (ويوجد رابط له أيضاً في «لوحة المعلم»).
 
 صفحة بسيطة بلا برمجة، تصمّم فيها الطالبات محطة كاملة:
 
