@@ -18,7 +18,7 @@ export function unlockAudio() {
 }
 
 /* ---- background ambience: one looping track (the sea), faded in and out, quieter under narration and videos */
-const AMB_VOL = 0.5
+const AMB_VOL = 0.7
 let wanted: string | null = null
 interface Track {
   url: string
